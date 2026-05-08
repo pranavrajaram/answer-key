@@ -52,11 +52,6 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
                 <span className={`text-sm ${isMe ? 'font-semibold text-teal-700' : 'font-medium text-gray-800'}`}>
                   {p.username}
                 </span>
-                {positions.length > 0 && (
-                  <span className="text-xs text-gray-400">
-                    {positions.length} open
-                  </span>
-                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-gray-700 tabular-nums">
