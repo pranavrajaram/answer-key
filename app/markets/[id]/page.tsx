@@ -6,6 +6,9 @@ import Navbar from '@/components/Navbar'
 import ProbabilityBar from '@/components/ProbabilityBar'
 import Countdown from '@/components/Countdown'
 import BetPanel from '@/components/BetPanel'
+import SellPanel from '@/components/SellPanel'
+import Comments from '@/components/Comments'
+import DeleteMarketButton from '@/components/DeleteMarketButton'
 
 export const revalidate = 0
 
@@ -22,19 +25,14 @@ export default async function MarketPage({ params }: PageProps) {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: market }, { data: profile }, { data: bets }] = await Promise.all([
-    supabase
-      .from('markets')
-      .select('*, profiles(username)')
-      .eq('id', id)
-      .single(),
-    supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase
-      .from('bets')
-      .select('*, profiles(username)')
-      .eq('market_id', id)
-      .order('created_at', { ascending: false }),
-  ])
+  const [{ data: market }, { data: profile }, { data: bets }, { data: sells }, { data: comments }] =
+    await Promise.all([
+      supabase.from('markets').select('*, profiles(username)').eq('id', id).single(),
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
+      supabase.from('bets').select('*, profiles(username)').eq('market_id', id).order('created_at', { ascending: false }),
+      supabase.from('sells').select('*').eq('market_id', id).eq('user_id', user.id),
+      supabase.from('comments').select('*, profiles(username)').eq('market_id', id).order('created_at', { ascending: false }),
+    ])
 
   if (!market) notFound()
 
@@ -42,7 +40,17 @@ export default async function MarketPage({ params }: PageProps) {
   const isResolved = !!market.resolved_option
   const isOpen = !isResolved && new Date(market.closes_at) > new Date()
 
-  // Group bets by option for resolved market payout display
+  // Compute user's net position per option
+  const myBets = (bets ?? []).filter((b: Bet) => b.user_id === user.id)
+  const positions = market.options.map((opt: string) => {
+    const bought = myBets.filter((b: Bet) => b.option === opt).reduce((s: number, b: Bet) => s + b.amount, 0)
+    const sold = (sells ?? []).filter((s: { option: string }) => s.option === opt).reduce((sum: number, s: { shares: number }) => sum + s.shares, 0)
+    return { option: opt, net: bought - sold }
+  })
+  const hasPositions = positions.some((p: { option: string; net: number }) => p.net > 0)
+
+  const myTotalBet = myBets.reduce((s: number, b: Bet) => s + b.amount, 0)
+
   const betsByOption: Record<string, Bet[]> = {}
   if (bets) {
     for (const bet of bets) {
@@ -50,17 +58,13 @@ export default async function MarketPage({ params }: PageProps) {
       betsByOption[bet.option].push(bet)
     }
   }
-
   const totalPot = (bets ?? []).reduce((s: number, b: Bet) => s + b.amount, 0)
-  const myBets = (bets ?? []).filter((b: Bet) => b.user_id === user.id)
-  const myTotalBet = myBets.reduce((s: number, b: Bet) => s + b.amount, 0)
 
   return (
     <div className="min-h-screen bg-stone-50">
       <Navbar profile={profile} />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
           <Link href="/" className="hover:text-gray-700 transition-colors">Dashboard</Link>
           <span>/</span>
@@ -68,7 +72,7 @@ export default async function MarketPage({ params }: PageProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: market info */}
+          {/* Left: market info + comments */}
           <div className="lg:col-span-2 space-y-5">
             <div className="bg-white border border-gray-200 rounded-xl p-6">
               <div className="flex items-start justify-between gap-4 mb-5">
@@ -101,13 +105,11 @@ export default async function MarketPage({ params }: PageProps) {
                     {market.profiles?.username ?? 'unknown'}
                   </span>
                 </span>
-                <span>
-                  {totalPot} pts in pool · {(bets ?? []).length} bets
-                </span>
+                <span>{totalPot} pts in pool · {(bets ?? []).length} bets</span>
               </div>
             </div>
 
-            {/* Resolved: payout info */}
+            {/* Resolved payout breakdown */}
             {isResolved && (
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Resolution</h2>
@@ -169,12 +171,23 @@ export default async function MarketPage({ params }: PageProps) {
                 </div>
               </div>
             )}
+
+            {/* Comments */}
+            <Comments
+              marketId={market.id}
+              currentUserId={user.id}
+              initialComments={comments ?? []}
+            />
           </div>
 
-          {/* Right: bet panel or actions */}
+          {/* Right: actions sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {isOpen && profile && (
               <BetPanel market={market} profile={profile} />
+            )}
+
+            {isOpen && hasPositions && (
+              <SellPanel market={market} positions={positions} />
             )}
 
             {isCreator && !isResolved && (
@@ -186,18 +199,24 @@ export default async function MarketPage({ params }: PageProps) {
               </Link>
             )}
 
+            {isCreator && !isResolved && (
+              <DeleteMarketButton marketId={market.id} />
+            )}
+
             {myBets.length > 0 && (
               <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <p className="text-xs font-medium text-gray-500 mb-2">Your bets</p>
+                <p className="text-xs font-medium text-gray-500 mb-2">Your positions</p>
                 <div className="space-y-1.5">
-                  {myBets.map((b: Bet) => (
-                    <div key={b.id} className="flex justify-between text-sm">
-                      <span className="text-gray-700">{b.option}</span>
-                      <span className="font-medium text-gray-900 tabular-nums">{b.amount} pts</span>
+                  {positions.filter((p: { option: string; net: number }) => p.net > 0 || myBets.some((b: Bet) => b.option === p.option)).map((p: { option: string; net: number }) => (
+                    <div key={p.option} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{p.option}</span>
+                      <span className="font-medium text-gray-900 tabular-nums">
+                        {p.net > 0 ? `${p.net} shares` : <span className="text-gray-400">sold out</span>}
+                      </span>
                     </div>
                   ))}
                   <div className="pt-1.5 border-t border-gray-100 flex justify-between text-xs text-gray-500">
-                    <span>Total</span>
+                    <span>Total spent</span>
                     <span className="font-semibold">{myTotalBet} pts</span>
                   </div>
                 </div>

@@ -15,3 +15,10 @@ export function lmsrCost(qValues: number[], b: number): number {
 export function formatProbability(prob: number): string {
   return `${(prob * 100).toFixed(1)}%`
 }
+
+// Convert desired probabilities to initial q_values.
+// Maps uniform (p_i = 1/n) → q_i = b/2 (matching the original 50/50 default).
+export function probsToQValues(probs: number[], b: number): number[] {
+  const n = probs.length
+  return probs.map(p => b * Math.log(p * n) + b / 2)
+}

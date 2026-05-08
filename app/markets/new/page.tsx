@@ -1,69 +1,92 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { probsToQValues } from '@/lib/lmsr'
+
+interface OptionRow {
+  label: string
+  pct: number
+}
+
+function equalSplit(n: number): number[] {
+  const base = Math.floor(100 / n)
+  const rem = 100 - base * n
+  return Array.from({ length: n }, (_, i) => (i === 0 ? base + rem : base))
+}
 
 export default function NewMarketPage() {
   const router = useRouter()
   const supabase = createClient()
 
   const [question, setQuestion] = useState('')
-  const [options, setOptions] = useState(['Yes', 'No'])
+  const [rows, setRows] = useState<OptionRow[]>([
+    { label: 'Yes', pct: 50 },
+    { label: 'No', pct: 50 },
+  ])
   const [closesAt, setClosesAt] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const total = rows.reduce((s, r) => s + r.pct, 0)
+  const totalOk = total === 100
+
   function addOption() {
-    if (options.length < 6) setOptions([...options, ''])
+    if (rows.length >= 6) return
+    const n = rows.length + 1
+    const splits = equalSplit(n)
+    setRows(prev =>
+      [...prev, { label: '', pct: 0 }].map((r, i) => ({ ...r, pct: splits[i] }))
+    )
   }
 
   function removeOption(i: number) {
-    if (options.length <= 2) return
-    setOptions(options.filter((_, idx) => idx !== i))
+    if (rows.length <= 2) return
+    const next = rows.filter((_, idx) => idx !== i)
+    const splits = equalSplit(next.length)
+    setRows(next.map((r, idx) => ({ ...r, pct: splits[idx] })))
   }
 
-  function updateOption(i: number, value: string) {
-    const next = [...options]
-    next[i] = value
-    setOptions(next)
+  function updateLabel(i: number, value: string) {
+    setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, label: value } : r)))
+  }
+
+  function updatePct(i: number, raw: string) {
+    const val = Math.max(1, Math.min(99, parseInt(raw) || 0))
+    setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, pct: val } : r)))
+  }
+
+  function redistribute() {
+    const splits = equalSplit(rows.length)
+    setRows(prev => prev.map((r, i) => ({ ...r, pct: splits[i] })))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    const cleaned = options.map(o => o.trim()).filter(Boolean)
-    if (cleaned.length < 2) {
-      setError('Need at least 2 options')
-      return
-    }
-    if (new Set(cleaned).size !== cleaned.length) {
-      setError('Options must be unique')
-      return
-    }
-    if (!closesAt) {
-      setError('Choose a closing date')
-      return
-    }
-    if (new Date(closesAt) <= new Date()) {
-      setError('Closing date must be in the future')
-      return
-    }
+    const cleaned = rows.map(r => ({ ...r, label: r.label.trim() })).filter(r => r.label)
+    if (cleaned.length < 2) { setError('Need at least 2 options'); return }
+    if (new Set(cleaned.map(r => r.label)).size !== cleaned.length) { setError('Options must be unique'); return }
+    if (!totalOk) { setError('Percentages must add up to exactly 100'); return }
+    if (!closesAt) { setError('Choose a closing date'); return }
+    if (new Date(closesAt) <= new Date()) { setError('Closing date must be in the future'); return }
 
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    const qValues = cleaned.map(() => 50)
+    const probs = cleaned.map(r => r.pct / 100)
+    const qValues = probsToQValues(probs, 100)
 
     const { data, error: insertError } = await supabase
       .from('markets')
       .insert({
         question: question.trim(),
         creator_id: user.id,
-        options: cleaned,
+        options: cleaned.map(r => r.label),
         q_values: qValues,
         b: 100,
         closes_at: new Date(closesAt).toISOString(),
@@ -80,7 +103,6 @@ export default function NewMarketPage() {
     router.push(`/markets/${data.id}`)
   }
 
-  // Min datetime for input: right now
   const minDatetime = new Date(Date.now() + 60000).toISOString().slice(0, 16)
 
   return (
@@ -100,6 +122,8 @@ export default function NewMarketPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+
+            {/* Question */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Question
@@ -115,27 +139,49 @@ export default function NewMarketPage() {
               />
             </div>
 
+            {/* Options + probabilities */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Options
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium text-gray-700">Options & starting odds</label>
+                <button
+                  type="button"
+                  onClick={redistribute}
+                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  Reset to equal
+                </button>
+              </div>
+
               <div className="space-y-2">
-                {options.map((opt, i) => (
-                  <div key={i} className="flex gap-2">
+                {rows.map((row, i) => (
+                  <div key={i} className="flex gap-2 items-center">
                     <input
                       type="text"
-                      value={opt}
-                      onChange={e => updateOption(i, e.target.value)}
+                      value={row.label}
+                      onChange={e => updateLabel(i, e.target.value)}
                       placeholder={`Option ${i + 1}`}
                       required
                       maxLength={80}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
                     />
-                    {options.length > 2 && (
+                    <div className="relative w-20">
+                      <input
+                        type="number"
+                        value={row.pct}
+                        onChange={e => updatePct(i, e.target.value)}
+                        min={1}
+                        max={99}
+                        className={`w-full px-3 py-2 pr-6 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent tabular-nums ${
+                          totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
+                        }`}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">%</span>
+                    </div>
+                    {rows.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(i)}
-                        className="text-gray-400 hover:text-red-500 transition-colors px-1"
+                        className="text-gray-300 hover:text-red-400 transition-colors px-1 text-sm"
                       >
                         ✕
                       </button>
@@ -143,17 +189,26 @@ export default function NewMarketPage() {
                   </div>
                 ))}
               </div>
-              {options.length < 6 && (
+
+              {/* Total indicator */}
+              <div className={`mt-2 text-xs flex items-center justify-end gap-1 ${totalOk ? 'text-teal-600' : 'text-amber-600'}`}>
+                <span>Total: <span className="font-semibold tabular-nums">{total}%</span></span>
+                {totalOk && <span>✓</span>}
+                {!totalOk && <span>— must equal 100%</span>}
+              </div>
+
+              {rows.length < 6 && (
                 <button
                   type="button"
                   onClick={addOption}
-                  className="mt-2 text-sm text-teal-600 hover:text-teal-800 font-medium"
+                  className="mt-3 text-sm text-teal-600 hover:text-teal-800 font-medium"
                 >
                   + Add option
                 </button>
               )}
             </div>
 
+            {/* Closing date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Closes at
@@ -184,7 +239,7 @@ export default function NewMarketPage() {
             </Link>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !totalOk}
               className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-60"
             >
               {loading ? 'Creating…' : 'Create market'}
