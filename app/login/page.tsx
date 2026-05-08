@@ -34,8 +34,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">Forecast</h1>
-          <p className="text-sm text-gray-500 mt-1">Prediction markets for friends</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Answer Key</h1>
+          <p className="text-sm text-gray-500 mt-1">Best rot yet.</p>
         </div>
 
         {sent ? (
