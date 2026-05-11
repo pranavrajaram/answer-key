@@ -72,7 +72,7 @@ export default function NewMarketPage() {
     if (new Set(cleaned.map(r => r.label)).size !== cleaned.length) { setError('Options must be unique'); return }
     if (!totalOk) { setError('Percentages must add up to exactly 100'); return }
     if (!closesAt) { setError('Choose a closing date'); return }
-    if (new Date(closesAt) <= new Date()) { setError('Closing date must be in the future'); return }
+
 
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -103,7 +103,6 @@ export default function NewMarketPage() {
     router.push(`/markets/${data.id}`)
   }
 
-  const minDatetime = new Date(Date.now() + 60000).toISOString().slice(0, 16)
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -216,7 +215,7 @@ export default function NewMarketPage() {
               <input
                 type="datetime-local"
                 value={closesAt}
-                min={minDatetime}
+
                 onChange={e => setClosesAt(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
