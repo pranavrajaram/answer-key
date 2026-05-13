@@ -5,6 +5,7 @@ import { Market, Profile } from '@/lib/types'
 import Navbar from '@/components/Navbar'
 import MarketCard from '@/components/MarketCard'
 import LeaderboardWithPortfolio from '@/components/LeaderboardWithPortfolio'
+import TabNav from '@/components/TabNav'
 
 interface BetRow {
   user_id: string
@@ -88,6 +89,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
+        <TabNav />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <section>
