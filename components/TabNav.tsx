@@ -13,17 +13,17 @@ export default function TabNav() {
   const pathname = usePathname()
 
   return (
-    <div className="flex gap-1 border-b border-gray-200 mb-8">
+    <div className="mb-8 inline-flex rounded-2xl border border-stone-200/80 bg-white/60 p-1 shadow-sm">
       {tabs.map(tab => {
         const active = pathname === tab.href
         return (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               active
-                ? 'border-teal-600 text-teal-700'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
+                ? 'bg-stone-950 text-white shadow-sm'
+                : 'text-stone-500 hover:bg-white hover:text-stone-900'
             }`}
           >
             {tab.label}

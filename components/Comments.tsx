@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface Comment {
@@ -29,7 +28,6 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function Comments({ marketId, currentUserId, initialComments }: CommentsProps) {
-  const router = useRouter()
   const supabase = createClient()
 
   const [comments, setComments] = useState<Comment[]>(initialComments)
@@ -70,9 +68,9 @@ export default function Comments({ marketId, currentUserId, initialComments }: C
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-      <h2 className="font-semibold text-gray-900 mb-4">
-        Comments {comments.length > 0 && <span className="text-gray-400 font-normal text-sm">({comments.length})</span>}
+    <div className="ak-card p-6">
+      <h2 className="mb-4 font-semibold text-stone-900">
+        Comments {comments.length > 0 && <span className="text-sm font-normal text-stone-400">({comments.length})</span>}
       </h2>
 
       <form onSubmit={handleSubmit} className="mb-5">
@@ -82,40 +80,40 @@ export default function Comments({ marketId, currentUserId, initialComments }: C
           placeholder="Add a comment…"
           maxLength={500}
           rows={2}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
+          className="ak-field resize-none"
         />
         <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-gray-400">{text.length}/500</span>
+          <span className="text-xs text-stone-400">{text.length}/500</span>
           <button
             type="submit"
             disabled={loading || !text.trim()}
-            className="bg-gray-900 hover:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+            className="rounded-lg bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-40"
           >
             {loading ? 'Posting…' : 'Post'}
           </button>
         </div>
-        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </form>
 
       {comments.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-4">No comments yet.</p>
+        <p className="py-4 text-center text-sm text-stone-400">No comments yet.</p>
       ) : (
         <div className="space-y-4">
           {comments.map(comment => (
             <div key={comment.id} className="flex gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className={`text-sm font-medium ${comment.user_id === currentUserId ? 'text-teal-700' : 'text-gray-800'}`}>
+                  <span className={`text-sm font-medium ${comment.user_id === currentUserId ? 'text-teal-700' : 'text-stone-800'}`}>
                     {comment.profiles?.username ?? 'unknown'}
                   </span>
-                  <span className="text-xs text-gray-400">{timeAgo(comment.created_at)}</span>
+                  <span className="text-xs text-stone-400">{timeAgo(comment.created_at)}</span>
                 </div>
-                <p className="text-sm text-gray-700 break-words">{comment.content}</p>
+                <p className="break-words text-sm leading-relaxed text-stone-700">{comment.content}</p>
               </div>
               {comment.user_id === currentUserId && (
                 <button
                   onClick={() => handleDelete(comment.id)}
-                  className="text-gray-300 hover:text-red-400 text-xs transition-colors shrink-0 self-start pt-0.5"
+                  className="shrink-0 self-start pt-0.5 text-xs text-stone-300 transition-colors hover:text-red-400"
                   title="Delete"
                 >
                   ✕

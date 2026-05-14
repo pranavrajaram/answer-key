@@ -265,14 +265,14 @@ export default async function StatsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="ak-page">
       <Navbar profile={profile} />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="ak-container py-8">
         <div className="flex items-center justify-between mb-0">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Stats</h1>
-            <p className="text-sm text-gray-500 mt-0.5">All-time performance</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Stats</h1>
+            <p className="mt-1 text-sm text-stone-500">All-time performance</p>
           </div>
         </div>
 
@@ -282,18 +282,18 @@ export default async function StatsPage() {
           <StatsGraph metrics={graphMetrics} defaultMetric="balance" />
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="ak-card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">#</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Player</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Balance</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Wagered</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Win rate</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Markets</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Best win</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Net P&L</th>
+              <tr className="border-b border-stone-100/90 bg-stone-50/60">
+                <th className="ak-section-label px-4 py-3 text-left">#</th>
+                <th className="ak-section-label px-4 py-3 text-left">Player</th>
+                <th className="ak-section-label px-4 py-3 text-right">Balance</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right sm:table-cell">Wagered</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right sm:table-cell">Win rate</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right md:table-cell">Markets</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right md:table-cell">Best win</th>
+                <th className="ak-section-label px-4 py-3 text-right">Net P&L</th>
               </tr>
             </thead>
             <tbody>
@@ -302,41 +302,41 @@ export default async function StatsPage() {
                 return (
                   <tr
                     key={s.id}
-                    className={`border-b border-gray-50 last:border-0 ${isMe ? 'bg-teal-50' : 'hover:bg-gray-50'}`}
+                    className={`border-b border-stone-100/80 last:border-0 ${isMe ? 'bg-teal-50/80' : 'hover:bg-white/70'}`}
                   >
-                    <td className="px-4 py-3 text-gray-400 tabular-nums">{i + 1}</td>
+                    <td className="px-4 py-3 tabular-nums text-stone-400">{i + 1}</td>
                     <td className="px-4 py-3">
-                      <span className={`font-medium ${isMe ? 'text-teal-700' : 'text-gray-800'}`}>
+                      <span className={`font-medium ${isMe ? 'text-teal-700' : 'text-stone-800'}`}>
                         {s.username}
-                        {isMe && <span className="text-xs text-teal-400 ml-1.5">you</span>}
+                        {isMe && <span className="ml-1.5 text-xs text-teal-500">you</span>}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-800 tabular-nums">
+                    <td className="px-4 py-3 text-right font-semibold text-stone-800 tabular-nums">
                       {s.balance.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-500 tabular-nums hidden sm:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell">
                       {s.totalWagered > 0 ? s.totalWagered.toLocaleString() : '—'}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums hidden sm:table-cell">
                       {s.winRate !== null ? (
-                        <span className={s.winRate >= 0.5 ? 'text-teal-600 font-medium' : 'text-gray-500'}>
+                        <span className={s.winRate >= 0.5 ? 'font-medium text-teal-700' : 'text-stone-500'}>
                           {Math.round(s.winRate * 100)}%
                         </span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-stone-300">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-500 tabular-nums hidden md:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell">
                       {s.marketsEntered > 0 ? (
                         <span>
-                          <span className="font-medium text-gray-700">{s.marketsWon}</span>
-                          <span className="text-gray-400">/{s.marketsEntered}</span>
+                          <span className="font-medium text-stone-700">{s.marketsWon}</span>
+                          <span className="text-stone-400">/{s.marketsEntered}</span>
                         </span>
                       ) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-500 tabular-nums hidden md:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell">
                       {s.biggestWin > 0 ? (
-                        <span className="text-teal-600 font-medium">+{s.biggestWin.toLocaleString()}</span>
+                        <span className="font-medium text-teal-700">+{s.biggestWin.toLocaleString()}</span>
                       ) : '—'}
                     </td>
                     <td className={`px-4 py-3 text-right font-semibold tabular-nums ${plColor(s.netPL)}`}>
@@ -349,7 +349,7 @@ export default async function StatsPage() {
           </table>
         </div>
 
-        <p className="text-xs text-gray-400 mt-3">
+        <p className="mt-3 text-xs text-stone-400">
           Win rate and P&L are calculated from resolved markets only.
         </p>
       </main>

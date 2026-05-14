@@ -134,26 +134,29 @@ export default function NewMarketPage() {
 
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link href="/" className="text-gray-400 hover:text-gray-700 text-sm transition-colors">
+    <div className="ak-page">
+      <header className="border-b border-stone-200/70 bg-[#fbf8f1]/85 backdrop-blur-xl">
+        <div className="ak-container flex h-16 items-center gap-3">
+          <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800">
             ← Dashboard
           </Link>
-          <span className="text-gray-200">/</span>
-          <span className="text-sm font-medium text-gray-700">New market</span>
+          <span className="text-stone-300">/</span>
+          <span className="text-sm font-medium text-stone-700">New market</span>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-10">
-        <h1 className="text-xl font-semibold text-gray-900 mb-6">Create a market</h1>
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-stone-950">Create a market</h1>
+        <p className="mb-6 text-sm leading-relaxed text-stone-500">
+          Set a clear question, choose the possible outcomes, and seed the starting odds.
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+          <div className="ak-card p-6 space-y-5">
 
             {/* Question */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-semibold text-stone-700 mb-1.5">
                 Question
               </label>
               <input
@@ -163,18 +166,18 @@ export default function NewMarketPage() {
                 placeholder="Will it rain in SF this weekend?"
                 required
                 maxLength={200}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
+                className="ak-field"
               />
             </div>
 
             {/* Options + probabilities */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700">Options & starting odds</label>
+                <label className="text-sm font-semibold text-stone-700">Options & starting odds</label>
                 <button
                   type="button"
                   onClick={redistribute}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-xs text-stone-400 transition-colors hover:text-stone-700"
                 >
                   Reset to equal
                 </button>
@@ -190,7 +193,7 @@ export default function NewMarketPage() {
                       placeholder={`Option ${i + 1}`}
                       required
                       maxLength={80}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
+                      className="ak-field flex-1"
                     />
                     <div className="relative w-20">
                       {(() => {
@@ -214,21 +217,21 @@ export default function NewMarketPage() {
                           }
                         }}
                         aria-label={`Starting odds for option ${i + 1}`}
-                        className={`w-full px-3 py-2 pr-6 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent tabular-nums ${
+                        className={`w-full rounded-xl border px-3 py-2 pr-6 text-right text-sm tabular-nums focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 ${
                           hasDraftError
                             ? 'border-red-300 bg-red-50'
-                            : totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
+                            : totalOk ? 'border-stone-300/80 bg-white/90' : 'border-amber-300 bg-amber-50'
                         }`}
                       />
                         )
                       })()}
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">%</span>
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400">%</span>
                     </div>
                     {rows.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(i)}
-                        className="text-gray-300 hover:text-red-400 transition-colors px-1 text-sm"
+                        className="px-1 text-sm text-stone-300 transition-colors hover:text-red-400"
                       >
                         ✕
                       </button>
@@ -243,7 +246,7 @@ export default function NewMarketPage() {
                 {totalOk && <span>✓</span>}
                 {!totalOk && <span>— must equal 100%</span>}
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-stone-500">
                 Edit percentages freely, then click away or press Enter to apply. Each option must be between 1% and 99%.
               </p>
 
@@ -251,7 +254,7 @@ export default function NewMarketPage() {
                 <button
                   type="button"
                   onClick={addOption}
-                  className="mt-3 text-sm text-teal-600 hover:text-teal-800 font-medium"
+                  className="ak-link mt-3 text-sm font-semibold"
                 >
                   + Add option
                 </button>
@@ -260,16 +263,16 @@ export default function NewMarketPage() {
 
             {/* Closing date + time — separate native pickers look cleaner than one datetime-local control */}
             <div className="space-y-3">
-              <label id="closes-at-label" className="block text-sm font-medium text-gray-700">
+              <label id="closes-at-label" className="block text-sm font-semibold text-stone-700">
                 Closes at
               </label>
               <div
                 role="group"
                 aria-labelledby="closes-at-label"
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-2xl border border-gray-200/90 bg-gradient-to-b from-white to-stone-50/80 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                className="grid grid-cols-1 gap-3 rounded-2xl border border-stone-200/90 bg-stone-50/70 p-3 sm:grid-cols-2"
               >
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                  <span className="ak-section-label block">
                     Date
                   </span>
                   <div className="relative">
@@ -292,12 +295,12 @@ export default function NewMarketPage() {
                       })()}
                       required
                       aria-describedby="closes-at-help"
-                      className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                      className="w-full appearance-none rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 [color-scheme:light]"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                  <span className="ak-section-label block">
                     Time
                   </span>
                   <div className="relative">
@@ -313,19 +316,19 @@ export default function NewMarketPage() {
                       onChange={e => setCloseTime(e.target.value)}
                       required
                       aria-describedby="closes-at-help"
-                      className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                      className="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 [color-scheme:light]"
                     />
                   </div>
                 </div>
               </div>
-              <p id="closes-at-help" className="text-xs text-gray-500">
+              <p id="closes-at-help" className="text-xs text-stone-500">
                 Deadline for new bets. Uses your device&apos;s local date and time.
               </p>
             </div>
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
               {error}
             </p>
           )}
@@ -333,14 +336,14 @@ export default function NewMarketPage() {
           <div className="flex gap-3">
             <Link
               href="/"
-              className="flex-1 text-center bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2.5 rounded-lg transition-colors"
+              className="ak-button-secondary flex-1 py-2.5 text-center"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading || !totalOk}
-              className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-60"
+              className="ak-button-primary flex-1 py-2.5"
             >
               {loading ? 'Creating…' : 'Create market'}
             </button>

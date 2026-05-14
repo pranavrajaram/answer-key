@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Market } from '@/lib/types'
-import { lmsrCost, newQValues, formatProbability, lmsrProb } from '@/lib/lmsr'
+import { lmsrCost, formatProbability, lmsrProb } from '@/lib/lmsr'
 
 interface Position {
   option: string
@@ -77,25 +77,25 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
   if (holdingPositions.length === 0) return null
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-      <h2 className="font-semibold text-gray-900">Sell position</h2>
+    <div className="ak-card p-5 space-y-4">
+      <h2 className="font-semibold text-stone-900">Sell position</h2>
 
       {holdingPositions.length > 1 && (
         <div>
-          <p className="text-xs font-medium text-gray-500 mb-2">Your positions</p>
+          <p className="mb-2 text-xs font-semibold text-stone-500">Your positions</p>
           <div className="space-y-1.5">
             {holdingPositions.map(p => (
               <button
                 key={p.option}
                 onClick={() => { setSelectedOption(p.option); setShares(Math.min(shares, p.net)) }}
-                className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition-all ${
+                className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
                   selectedOption === p.option
-                    ? 'border-orange-400 bg-orange-50 text-orange-800'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    ? 'border-orange-400/80 bg-orange-50 text-orange-900'
+                    : 'border-stone-200 bg-white/70 text-stone-700 hover:border-stone-300 hover:bg-white'
                 }`}
               >
                 <span className="font-medium">{p.option}</span>
-                <span className="text-xs text-gray-400 ml-2">{p.net} shares</span>
+                <span className="ml-2 text-xs text-stone-400">{p.net} shares</span>
               </button>
             ))}
           </div>
@@ -103,11 +103,11 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
       )}
 
       {holdingPositions.length === 1 && (
-        <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm">
-          <span className="text-gray-500">Holding </span>
-          <span className="font-semibold text-gray-800">{maxShares} shares</span>
-          <span className="text-gray-500"> of </span>
-          <span className="font-semibold text-gray-800">{selectedOption}</span>
+        <div className="rounded-xl border border-stone-200/80 bg-stone-50/80 px-3 py-2 text-sm">
+          <span className="text-stone-500">Holding </span>
+          <span className="font-semibold text-stone-800">{maxShares} shares</span>
+          <span className="text-stone-500"> of </span>
+          <span className="font-semibold text-stone-800">{selectedOption}</span>
         </div>
       )}
 
@@ -115,8 +115,8 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
         <>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-medium text-gray-500">Shares to sell</p>
-              <span className="text-sm font-semibold text-gray-900">{Math.min(shares, maxShares)}</span>
+              <p className="text-xs font-semibold text-stone-500">Shares to sell</p>
+              <span className="text-sm font-semibold text-stone-900">{Math.min(shares, maxShares)}</span>
             </div>
             <input
               type="range"
@@ -127,19 +127,19 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
               onChange={e => setShares(Number(e.target.value))}
               className="w-full accent-orange-500"
             />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <div className="mt-1 flex justify-between text-xs text-stone-400">
               <span>1</span>
               <span>{maxShares} max</span>
             </div>
           </div>
 
-          <div className="bg-orange-50 rounded-lg p-3 space-y-1 text-xs">
+          <div className="rounded-xl border border-orange-200/70 bg-orange-50/80 p-3 space-y-1 text-xs">
             <div className="flex justify-between">
-              <span className="text-gray-500">Estimated proceeds</span>
+              <span className="text-stone-500">Estimated proceeds</span>
               <span className="font-semibold text-orange-700">~{estimatedProceeds} pts</span>
             </div>
             {currentProb !== null && newProb !== null && (
-              <div className="flex justify-between text-gray-400">
+              <div className="flex justify-between text-stone-400">
                 <span>Odds after sale</span>
                 <span>{formatProbability(currentProb)} → {formatProbability(newProb)}</span>
               </div>
@@ -147,13 +147,13 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {error}
             </p>
           )}
 
           {result !== null && (
-            <p className="text-sm text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2 text-center">
+            <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-center text-sm text-teal-700">
               Sold for {result} pts
             </p>
           )}
@@ -161,7 +161,7 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
           <button
             onClick={handleSell}
             disabled={loading || shares <= 0}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50"
+            className="w-full rounded-xl bg-orange-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-700 disabled:opacity-50"
           >
             {loading ? 'Selling…' : `Sell ${Math.min(shares, maxShares)} shares (~${estimatedProceeds} pts)`}
           </button>

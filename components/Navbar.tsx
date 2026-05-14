@@ -20,21 +20,21 @@ export default function Navbar({ profile }: NavbarProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-gray-900 tracking-tight">
+    <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-[#fbf8f1]/85 backdrop-blur-xl">
+      <div className="ak-container flex h-16 items-center justify-between">
+        <Link href="/" className="font-semibold tracking-tight text-stone-950 transition-colors hover:text-teal-800">
           Answer Key
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {profile && (
             <>
-              <span className="text-sm text-gray-500">
-                <span className="font-medium text-gray-900">{profile.points_balance.toLocaleString()}</span> pts
+              <span className="rounded-full border border-stone-200/80 bg-white/70 px-3 py-1 text-sm text-stone-500 shadow-sm">
+                <span className="font-semibold text-stone-950">{profile.points_balance.toLocaleString()}</span> pts
               </span>
-              <span className="text-sm text-gray-500">{profile.username}</span>
+              <span className="hidden text-sm text-stone-500 sm:inline">{profile.username}</span>
               <button
                 onClick={handleSignOut}
-                className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
+                className="text-sm text-stone-400 transition-colors hover:text-stone-800"
               >
                 Sign out
               </button>
