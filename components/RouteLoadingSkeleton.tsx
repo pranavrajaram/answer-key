@@ -34,12 +34,14 @@ function HeaderSkeleton() {
 
 function TabSkeleton({ activeTab = 'markets' }: { activeTab?: ActiveTab }) {
   return (
-    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-700/60 dark:bg-stone-900/55 sm:inline-grid">
+    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-600/35 dark:bg-stone-800/35 sm:inline-grid">
       {tabs.map(tab => (
         <div
           key={tab.key}
           className={`rounded-xl px-3 py-2 text-center text-sm font-semibold leading-none ${
-            activeTab === tab.key ? 'bg-stone-950 text-white' : 'text-stone-400 dark:text-stone-500'
+            activeTab === tab.key
+              ? 'bg-stone-900 text-white shadow-sm dark:bg-teal-500/18 dark:text-teal-50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-teal-400/35'
+              : 'text-stone-400 dark:text-stone-500'
           }`}
         >
           {tab.label}
