@@ -45,6 +45,52 @@ const PADDING_X = 56
 const PADDING_TOP = 20
 const PADDING_BOTTOM = 36
 
+/** Catmull–Rom style smoothing: cubic Bézier through points (natural tension). */
+function smoothPathThroughPoints(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return ''
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`
+  if (points.length === 2) {
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`
+  }
+
+  let d = `M ${points[0].x} ${points[0].y}`
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? 0 : i - 1]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[i + 2] ?? p2
+    const cp1x = p1.x + (p2.x - p0.x) / 6
+    const cp1y = p1.y + (p2.y - p0.y) / 6
+    const cp2x = p2.x - (p3.x - p1.x) / 6
+    const cp2y = p2.y - (p3.y - p1.y) / 6
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
+  }
+  return d
+}
+
+/** Build SVG `d` for a series with gaps (null): smooth each contiguous run separately. */
+function pathDForSeriesWithGaps(
+  seriesPoints: StatsGraphPoint[],
+  getX: (index: number) => number,
+  getY: (value: number) => number
+): string {
+  const segments: { x: number; y: number }[][] = []
+  let current: { x: number; y: number }[] = []
+  seriesPoints.forEach((point, index) => {
+    if (point.value === null) {
+      if (current.length) {
+        segments.push(current)
+        current = []
+      }
+      return
+    }
+    current.push({ x: getX(index), y: getY(point.value) })
+  })
+  if (current.length) segments.push(current)
+
+  return segments.map(seg => smoothPathThroughPoints(seg)).join(' ')
+}
+
 function formatDateLabel(value: string) {
   return new Date(value).toLocaleDateString(undefined, {
     month: 'short',
@@ -152,19 +198,7 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
 
           {chartData.hasPlotData &&
             chartData.validSeries.map(series => {
-              let drawing = false
-              let path = ''
-
-              series.points.forEach((point, index) => {
-                if (point.value === null) {
-                  drawing = false
-                  return
-                }
-                const x = getX(index)
-                const y = getY(point.value)
-                path += drawing ? ` L ${x} ${y}` : ` M ${x} ${y}`
-                drawing = true
-              })
+              const path = pathDForSeriesWithGaps(series.points, getX, getY)
 
               const lastVisible = [...series.points]
                 .map((point, index) => ({ point, index }))
@@ -173,7 +207,14 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
 
               return (
                 <g key={series.userId}>
-                  <path d={path.trim()} fill="none" stroke={series.color} strokeWidth="2.4" strokeLinecap="round" />
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke={series.color}
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                   {lastVisible && lastVisible.point.value !== null && (
                     <circle
                       cx={getX(lastVisible.index)}
