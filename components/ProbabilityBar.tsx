@@ -23,17 +23,21 @@ export default function ProbabilityBar({ options, qValues, b, highlightIndex }: 
         return (
           <div key={option}>
             <div className="mb-1 flex items-start justify-between gap-3 text-sm leading-snug">
-              <span className={`min-w-0 font-medium ${isHighlighted ? 'text-teal-700' : 'text-stone-700'}`}>
+              <span
+                className={`min-w-0 font-medium ${isHighlighted ? 'text-teal-700 dark:text-teal-400' : 'text-stone-700 dark:text-stone-300'}`}
+              >
                 {option}
               </span>
-              <span className={`shrink-0 tabular-nums font-semibold ${isLeading ? 'text-teal-700' : 'text-stone-500'}`}>
+              <span
+                className={`shrink-0 tabular-nums font-semibold ${isLeading ? 'text-teal-700 dark:text-teal-400' : 'text-stone-500 dark:text-stone-400'}`}
+              >
                 {formatProbability(prob)}
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-stone-200/70">
+            <div className="h-2.5 overflow-hidden rounded-full bg-stone-200/70 dark:bg-stone-700/80">
               <div
                 className={`h-full rounded-full ${
-                  isLeading ? 'bg-teal-600' : 'bg-stone-300'
+                  isLeading ? 'bg-teal-600 dark:bg-teal-500' : 'bg-stone-300 dark:bg-stone-600'
                 }`}
                 style={{ width: `${prob * 100}%` }}
               />

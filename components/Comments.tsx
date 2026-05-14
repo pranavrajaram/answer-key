@@ -69,8 +69,11 @@ export default function Comments({ marketId, currentUserId, initialComments }: C
 
   return (
     <div className="ak-card p-6">
-      <h2 className="mb-4 font-semibold text-stone-900">
-        Comments {comments.length > 0 && <span className="text-sm font-normal text-stone-400">({comments.length})</span>}
+      <h2 className="mb-4 font-semibold text-stone-900 dark:text-stone-100">
+        Comments{' '}
+        {comments.length > 0 && (
+          <span className="text-sm font-normal text-stone-400 dark:text-stone-500">({comments.length})</span>
+        )}
       </h2>
 
       <form onSubmit={handleSubmit} className="mb-5">
@@ -83,37 +86,39 @@ export default function Comments({ marketId, currentUserId, initialComments }: C
           className="ak-field resize-none"
         />
         <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-stone-400">{text.length}/500</span>
+          <span className="text-xs text-stone-400 dark:text-stone-500">{text.length}/500</span>
           <button
             type="submit"
             disabled={loading || !text.trim()}
-            className="rounded-lg bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-40"
+            className="rounded-lg bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             {loading ? 'Posting…' : 'Post'}
           </button>
         </div>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
       </form>
 
       {comments.length === 0 ? (
-        <p className="py-4 text-center text-sm text-stone-400">No comments yet.</p>
+        <p className="py-4 text-center text-sm text-stone-400 dark:text-stone-500">No comments yet.</p>
       ) : (
         <div className="space-y-4">
           {comments.map(comment => (
             <div key={comment.id} className="flex gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className={`text-sm font-medium ${comment.user_id === currentUserId ? 'text-teal-700' : 'text-stone-800'}`}>
+                  <span
+                    className={`text-sm font-medium ${comment.user_id === currentUserId ? 'text-teal-700 dark:text-teal-400' : 'text-stone-800 dark:text-stone-200'}`}
+                  >
                     {comment.profiles?.username ?? 'unknown'}
                   </span>
-                  <span className="text-xs text-stone-400">{timeAgo(comment.created_at)}</span>
+                  <span className="text-xs text-stone-400 dark:text-stone-500">{timeAgo(comment.created_at)}</span>
                 </div>
-                <p className="break-words text-sm leading-relaxed text-stone-700">{comment.content}</p>
+                <p className="break-words text-sm leading-relaxed text-stone-700 dark:text-stone-300">{comment.content}</p>
               </div>
               {comment.user_id === currentUserId && (
                 <button
                   onClick={() => handleDelete(comment.id)}
-                  className="shrink-0 self-start pt-0.5 text-xs text-stone-300 transition-colors hover:text-red-400"
+                  className="shrink-0 self-start pt-0.5 text-xs text-stone-300 transition-colors hover:text-red-400 dark:text-stone-600 dark:hover:text-red-400"
                   title="Delete"
                 >
                   ✕

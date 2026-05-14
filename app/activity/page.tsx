@@ -86,8 +86,8 @@ export default async function ActivityPage() {
       <main className="ak-container py-6 sm:py-8">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Activity</h1>
-            <p className="mt-1 text-sm text-stone-500">What everyone&apos;s been up to</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Activity</h1>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">What everyone&apos;s been up to</p>
           </div>
         </div>
 
@@ -95,17 +95,20 @@ export default async function ActivityPage() {
 
         <div className="max-w-2xl">
           {feed.length === 0 ? (
-            <div className="ak-card p-8 text-center text-sm text-stone-400">
+            <div className="ak-card p-8 text-center text-sm text-stone-400 dark:text-stone-500">
               No activity yet.
             </div>
           ) : (
             <div className="ak-card p-2 sm:p-3">
               {feed.map(item => (
-                <div key={item.type + item.id} className="flex gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/70">
+                <div
+                  key={item.type + item.id}
+                  className="flex gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/70 dark:hover:bg-stone-800/40"
+                >
                   {/* Dot */}
                   <div className="mt-1.5 shrink-0">
                     {item.type === 'bet' ? (
-                      <div className={`h-2 w-2 rounded-full ${item.isMe ? 'bg-teal-600' : 'bg-stone-300'}`} />
+                      <div className={`h-2 w-2 rounded-full ${item.isMe ? 'bg-teal-600' : 'bg-stone-300 dark:bg-stone-600'}`} />
                     ) : (
                       <div className="h-2 w-2 rounded-full bg-amber-400" />
                     )}
@@ -114,34 +117,36 @@ export default async function ActivityPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     {item.type === 'bet' ? (
-                      <p className="text-sm leading-relaxed text-stone-700">
-                        <span className={`font-semibold ${item.isMe ? 'text-teal-700' : 'text-stone-950'}`}>
+                      <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+                        <span
+                          className={`font-semibold ${item.isMe ? 'text-teal-700 dark:text-teal-400' : 'text-stone-950 dark:text-stone-100'}`}
+                        >
                           {item.isMe ? 'You' : item.username}
                         </span>
                         {' bet '}
-                        <span className="font-medium text-stone-950">{item.amount} pts</span>
+                        <span className="font-medium text-stone-950 dark:text-stone-100">{item.amount} pts</span>
                         {' on '}
-                        <span className="font-medium text-stone-950">{item.option}</span>
+                        <span className="font-medium text-stone-950 dark:text-stone-100">{item.option}</span>
                         {' in '}
                         <Link href={`/markets/${item.marketId}`} className="ak-link">
                           {item.question}
                         </Link>
                       </p>
                     ) : (
-                      <p className="text-sm leading-relaxed text-stone-700">
-                        <span className="font-semibold text-stone-950">{item.username}</span>
+                      <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+                        <span className="font-semibold text-stone-950 dark:text-stone-100">{item.username}</span>
                         {' resolved '}
                         <Link href={`/markets/${item.marketId}`} className="ak-link">
                           {item.question}
                         </Link>
                         {' — winner: '}
-                        <span className="font-medium text-amber-700">{item.winner}</span>
+                        <span className="font-medium text-amber-700 dark:text-amber-400">{item.winner}</span>
                       </p>
                     )}
                   </div>
 
                   {/* Time */}
-                  <span className="mt-0.5 shrink-0 text-xs text-stone-400">{timeAgo(item.ts)}</span>
+                  <span className="mt-0.5 shrink-0 text-xs text-stone-400 dark:text-stone-500">{timeAgo(item.ts)}</span>
                 </div>
               ))}
             </div>

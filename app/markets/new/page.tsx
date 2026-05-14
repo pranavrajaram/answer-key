@@ -135,19 +135,19 @@ export default function NewMarketPage() {
 
   return (
     <div className="ak-page">
-      <header className="border-b border-stone-200/70 bg-[#f8f4ec]">
+      <header className="border-b border-stone-200/70 bg-[var(--ak-bg)] dark:border-stone-700/60">
         <div className="ak-container flex h-16 items-center gap-3">
-          <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800">
+          <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800 dark:hover:text-stone-200">
             ← Dashboard
           </Link>
-          <span className="text-stone-300">/</span>
-          <span className="text-sm font-medium text-stone-700">New market</span>
+          <span className="text-stone-300 dark:text-stone-600">/</span>
+          <span className="text-sm font-medium text-stone-700 dark:text-stone-300">New market</span>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-lg px-4 py-8 sm:py-10">
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-stone-950">Create a market</h1>
-        <p className="mb-6 text-sm leading-relaxed text-stone-500">
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Create a market</h1>
+        <p className="mb-6 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
           Set a clear question, choose the possible outcomes, and seed the starting odds.
         </p>
 
@@ -156,7 +156,7 @@ export default function NewMarketPage() {
 
             {/* Question */}
             <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-1.5">
+              <label className="mb-1.5 block text-sm font-semibold text-stone-700 dark:text-stone-300">
                 Question
               </label>
               <input
@@ -173,11 +173,11 @@ export default function NewMarketPage() {
             {/* Options + probabilities */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold text-stone-700">Options & starting odds</label>
+                <label className="text-sm font-semibold text-stone-700 dark:text-stone-300">Options & starting odds</label>
                 <button
                   type="button"
                   onClick={redistribute}
-                  className="text-xs text-stone-400 transition-colors hover:text-stone-700"
+                  className="text-xs text-stone-400 transition-colors hover:text-stone-700 dark:hover:text-stone-200"
                 >
                   Reset to equal
                 </button>
@@ -217,21 +217,25 @@ export default function NewMarketPage() {
                           }
                         }}
                         aria-label={`Starting odds for option ${i + 1}`}
-                        className={`w-full rounded-xl border px-3 py-2 pr-6 text-right text-sm tabular-nums focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 ${
+                        className={`w-full rounded-xl border px-3 py-2 pr-6 text-right text-sm tabular-nums focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 dark:focus:border-teal-400 dark:focus:ring-teal-500/15 ${
                           hasDraftError
-                            ? 'border-red-300 bg-red-50'
-                            : totalOk ? 'border-stone-300/80 bg-white/90' : 'border-amber-300 bg-amber-50'
+                            ? 'border-red-300 bg-red-50 dark:border-red-500/50 dark:bg-red-950/30'
+                            : totalOk
+                              ? 'border-stone-300/80 bg-white/90 dark:border-stone-600/70 dark:bg-stone-900/75 dark:text-stone-100'
+                              : 'border-amber-300 bg-amber-50 dark:border-amber-600/50 dark:bg-amber-950/25'
                         }`}
                       />
                         )
                       })()}
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400">%</span>
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400 dark:text-stone-500">
+                        %
+                      </span>
                     </div>
                     {rows.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(i)}
-                        className="px-1 text-sm text-stone-300 transition-colors hover:text-red-400"
+                        className="px-1 text-sm text-stone-300 transition-colors hover:text-red-400 dark:text-stone-600 dark:hover:text-red-400"
                       >
                         ✕
                       </button>
@@ -241,12 +245,12 @@ export default function NewMarketPage() {
               </div>
 
               {/* Total indicator */}
-              <div className={`mt-2 text-xs flex items-center justify-end gap-1 ${totalOk ? 'text-teal-600' : 'text-amber-600'}`}>
+              <div className={`mt-2 flex items-center justify-end gap-1 text-xs ${totalOk ? 'text-teal-600 dark:text-teal-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 <span>Total: <span className="font-semibold tabular-nums">{total}%</span></span>
                 {totalOk && <span>✓</span>}
                 {!totalOk && <span>— must equal 100%</span>}
               </div>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 Edit percentages freely, then click away or press Enter to apply. Each option must be between 1% and 99%.
               </p>
 
@@ -263,20 +267,20 @@ export default function NewMarketPage() {
 
             {/* Closing date + time — separate native pickers look cleaner than one datetime-local control */}
             <div className="space-y-3">
-              <label id="closes-at-label" className="block text-sm font-semibold text-stone-700">
+              <label id="closes-at-label" className="block text-sm font-semibold text-stone-700 dark:text-stone-300">
                 Closes at
               </label>
               <div
                 role="group"
                 aria-labelledby="closes-at-label"
-                className="grid grid-cols-1 gap-3 rounded-2xl border border-stone-200/90 bg-stone-50/70 p-3 sm:grid-cols-2"
+                className="grid grid-cols-1 gap-3 rounded-2xl border border-stone-200/90 bg-stone-50/70 p-3 dark:border-stone-700/60 dark:bg-stone-900/35 sm:grid-cols-2"
               >
                 <div className="space-y-1.5">
                   <span className="ak-section-label block">
                     Date
                   </span>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80 dark:text-teal-400/90">
                       <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
                         <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
                         <path d="M6.5 2.8v2.5M13.5 2.8v2.5M3.5 8h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -295,7 +299,7 @@ export default function NewMarketPage() {
                       })()}
                       required
                       aria-describedby="closes-at-help"
-                      className="w-full appearance-none rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 [color-scheme:light]"
+                      className="w-full appearance-none rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 dark:border-stone-600 dark:bg-stone-900/80 dark:text-stone-100 dark:hover:border-teal-500/50 dark:focus:border-teal-400 dark:focus:ring-teal-500/15"
                     />
                   </div>
                 </div>
@@ -304,7 +308,7 @@ export default function NewMarketPage() {
                     Time
                   </span>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80 dark:text-teal-400/90">
                       <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
                         <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
                         <path d="M10 6.2V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -316,19 +320,19 @@ export default function NewMarketPage() {
                       onChange={e => setCloseTime(e.target.value)}
                       required
                       aria-describedby="closes-at-help"
-                      className="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 [color-scheme:light]"
+                      className="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-3 text-sm text-stone-900 transition hover:border-teal-300/60 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 dark:border-stone-600 dark:bg-stone-900/80 dark:text-stone-100 dark:hover:border-teal-500/50 dark:focus:border-teal-400 dark:focus:ring-teal-500/15"
                     />
                   </div>
                 </div>
               </div>
-              <p id="closes-at-help" className="text-xs text-stone-500">
+              <p id="closes-at-help" className="text-xs text-stone-500 dark:text-stone-400">
                 Deadline for new bets. Uses your device&apos;s local date and time.
               </p>
             </div>
           </div>
 
           {error && (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-500/40 dark:bg-red-950/30 dark:text-red-400">
               {error}
             </p>
           )}

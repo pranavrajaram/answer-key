@@ -55,26 +55,26 @@ export default function ResolvePanel({ market, bets }: ResolvePanelProps) {
 
     return (
       <div className="ak-card p-5 space-y-4">
-        <p className="font-medium text-stone-900">
-          Confirm: <span className="text-teal-700">{selected}</span> wins?
+        <p className="font-medium text-stone-900 dark:text-stone-100">
+          Confirm: <span className="text-teal-700 dark:text-teal-400">{selected}</span> wins?
         </p>
 
         {payouts.length > 0 ? (
-          <div className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-3 space-y-1.5">
-            <p className="mb-2 text-xs font-semibold text-stone-500">Payouts</p>
+          <div className="space-y-1.5 rounded-xl border border-stone-200/80 bg-stone-50/80 p-3 dark:border-stone-700/60 dark:bg-stone-900/40">
+            <p className="mb-2 text-xs font-semibold text-stone-500 dark:text-stone-400">Payouts</p>
             {payouts.map(b => (
               <div key={b.id} className="flex justify-between text-sm">
-                <span className="text-stone-600">{b.user_id}</span>
-                <span className="font-semibold text-teal-700">+{b.payout} pts</span>
+                <span className="text-stone-600 dark:text-stone-400">{b.user_id}</span>
+                <span className="font-semibold text-teal-700 dark:text-teal-400">+{b.payout} pts</span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-stone-500">No bets on this option — no payouts.</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">No bets on this option — no payouts.</p>
         )}
 
         {error && (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-500/40 dark:bg-red-950/30 dark:text-red-400">
             {error}
           </p>
         )}
@@ -101,7 +101,7 @@ export default function ResolvePanel({ market, bets }: ResolvePanelProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-stone-700">Which option won?</p>
+      <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">Which option won?</p>
       {market.options.map((opt: string) => (
         <button
           key={opt}
@@ -109,7 +109,7 @@ export default function ResolvePanel({ market, bets }: ResolvePanelProps) {
             setSelected(opt)
             setConfirming(true)
           }}
-          className="ak-card-solid ak-card-hover w-full px-4 py-3 text-left text-sm font-semibold text-stone-800 hover:bg-teal-50/60"
+          className="ak-card-solid ak-card-hover w-full px-4 py-3 text-left text-sm font-semibold text-stone-800 hover:bg-teal-50/60 dark:text-stone-100 dark:hover:bg-teal-950/25"
         >
           {opt}
         </button>

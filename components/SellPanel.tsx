@@ -78,11 +78,11 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
 
   return (
     <div className="ak-card p-5 space-y-4">
-      <h2 className="font-semibold text-stone-900">Sell position</h2>
+      <h2 className="font-semibold text-stone-900 dark:text-stone-100">Sell position</h2>
 
       {holdingPositions.length > 1 && (
         <div>
-          <p className="mb-2 text-xs font-semibold text-stone-500">Your positions</p>
+          <p className="mb-2 text-xs font-semibold text-stone-500 dark:text-stone-400">Your positions</p>
           <div className="space-y-1.5">
             {holdingPositions.map(p => (
               <button
@@ -90,12 +90,12 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
                 onClick={() => { setSelectedOption(p.option); setShares(Math.min(shares, p.net)) }}
                 className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
                   selectedOption === p.option
-                    ? 'border-orange-400/80 bg-orange-50 text-orange-900'
-                    : 'border-stone-200 bg-white/70 text-stone-700 hover:border-stone-300 hover:bg-white'
+                    ? 'border-orange-400/80 bg-orange-50 text-orange-900 dark:border-orange-500/60 dark:bg-orange-950/35 dark:text-orange-100'
+                    : 'border-stone-200 bg-white/70 text-stone-700 hover:border-stone-300 hover:bg-white dark:border-stone-600/70 dark:bg-stone-900/50 dark:text-stone-200 dark:hover:border-stone-500 dark:hover:bg-stone-800/60'
                 }`}
               >
                 <span className="font-medium">{p.option}</span>
-                <span className="ml-2 text-xs text-stone-400">{p.net} shares</span>
+                <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">{p.net} shares</span>
               </button>
             ))}
           </div>
@@ -103,11 +103,11 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
       )}
 
       {holdingPositions.length === 1 && (
-        <div className="rounded-xl border border-stone-200/80 bg-stone-50/80 px-3 py-2 text-sm">
-          <span className="text-stone-500">Holding </span>
-          <span className="font-semibold text-stone-800">{maxShares} shares</span>
-          <span className="text-stone-500"> of </span>
-          <span className="font-semibold text-stone-800">{selectedOption}</span>
+        <div className="rounded-xl border border-stone-200/80 bg-stone-50/80 px-3 py-2 text-sm dark:border-stone-700/60 dark:bg-stone-900/40">
+          <span className="text-stone-500 dark:text-stone-400">Holding </span>
+          <span className="font-semibold text-stone-800 dark:text-stone-100">{maxShares} shares</span>
+          <span className="text-stone-500 dark:text-stone-400"> of </span>
+          <span className="font-semibold text-stone-800 dark:text-stone-100">{selectedOption}</span>
         </div>
       )}
 
@@ -115,8 +115,8 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
         <>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-stone-500">Shares to sell</p>
-              <span className="text-sm font-semibold text-stone-900">{Math.min(shares, maxShares)}</span>
+              <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">Shares to sell</p>
+              <span className="text-sm font-semibold text-stone-900 dark:text-stone-100">{Math.min(shares, maxShares)}</span>
             </div>
             <input
               type="range"
@@ -127,19 +127,19 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
               onChange={e => setShares(Number(e.target.value))}
               className="w-full accent-orange-500"
             />
-            <div className="mt-1 flex justify-between text-xs text-stone-400">
+            <div className="mt-1 flex justify-between text-xs text-stone-400 dark:text-stone-500">
               <span>1</span>
               <span>{maxShares} max</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-orange-200/70 bg-orange-50/80 p-3 space-y-1 text-xs">
+          <div className="space-y-1 rounded-xl border border-orange-200/70 bg-orange-50/80 p-3 text-xs dark:border-orange-800/50 dark:bg-orange-950/25">
             <div className="flex justify-between">
-              <span className="text-stone-500">Estimated proceeds</span>
-              <span className="font-semibold text-orange-700">~{estimatedProceeds} pts</span>
+              <span className="text-stone-500 dark:text-stone-400">Estimated proceeds</span>
+              <span className="font-semibold text-orange-700 dark:text-orange-300">~{estimatedProceeds} pts</span>
             </div>
             {currentProb !== null && newProb !== null && (
-              <div className="flex justify-between text-stone-400">
+              <div className="flex justify-between text-stone-400 dark:text-stone-500">
                 <span>Odds after sale</span>
                 <span>{formatProbability(currentProb)} → {formatProbability(newProb)}</span>
               </div>
@@ -147,13 +147,13 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
           </div>
 
           {error && (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-500/40 dark:bg-red-950/30 dark:text-red-400">
               {error}
             </p>
           )}
 
           {result !== null && (
-            <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-center text-sm text-teal-700">
+            <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-center text-sm text-teal-700 dark:border-teal-700/50 dark:bg-teal-950/35 dark:text-teal-300">
               Sold for {result} pts
             </p>
           )}
@@ -161,7 +161,7 @@ export default function SellPanel({ market, positions }: SellPanelProps) {
           <button
             onClick={handleSell}
             disabled={loading || shares <= 0}
-            className="w-full rounded-xl bg-orange-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-700 disabled:opacity-50"
+            className="w-full rounded-xl bg-orange-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-700 disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
           >
             {loading ? 'Selling…' : `Sell ${Math.min(shares, maxShares)} shares (~${estimatedProceeds} pts)`}
           </button>

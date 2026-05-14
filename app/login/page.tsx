@@ -34,22 +34,22 @@ export default function LoginPage() {
     <div className="ak-page flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-950">Answer Key</h1>
-          <p className="mt-2 text-sm text-stone-500">A quiet prediction market for friends.</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Answer Key</h1>
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">A quiet prediction market for friends.</p>
         </div>
 
         {sent ? (
-          <div className="rounded-2xl border border-teal-200 bg-teal-50/85 p-6 text-center">
+          <div className="rounded-2xl border border-teal-200 bg-teal-50/85 p-6 text-center dark:border-teal-700/50 dark:bg-teal-950/35">
             <div className="mb-2 text-2xl" aria-hidden="true">✉️</div>
-            <p className="font-medium text-teal-900">Check your email</p>
-            <p className="text-sm text-teal-700 mt-1">
+            <p className="font-medium text-teal-900 dark:text-teal-200">Check your email</p>
+            <p className="mt-1 text-sm text-teal-700 dark:text-teal-300">
               We sent a magic link to <strong>{email}</strong>
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="ak-card p-6 space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-semibold text-stone-700">
+              <label htmlFor="email" className="mb-1 block text-sm font-semibold text-stone-700 dark:text-stone-300">
                 Email address
               </label>
               <input
@@ -64,7 +64,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
 
             <button

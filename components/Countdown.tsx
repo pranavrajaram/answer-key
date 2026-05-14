@@ -41,10 +41,10 @@ export default function Countdown({ closesAt }: CountdownProps) {
     <span
       className={`ak-badge ${
         isExpired
-          ? 'bg-stone-100 text-stone-400'
+          ? 'bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500'
           : isUrgent
-          ? 'bg-amber-50 text-amber-700'
-          : 'bg-stone-100/80 text-stone-500'
+          ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+          : 'bg-stone-100/80 text-stone-500 dark:bg-stone-800/90 dark:text-stone-400'
       }`}
     >
       {timeLeft === null ? 'closes soon' : isExpired ? 'Closed' : `closes in ${formatTimeLeft(timeLeft)}`}
