@@ -20,31 +20,34 @@ function formatTimeLeft(ms: number): string {
 }
 
 export default function Countdown({ closesAt }: CountdownProps) {
-  const [timeLeft, setTimeLeft] = useState<number>(
-    new Date(closesAt).getTime() - Date.now()
-  )
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    function updateTimeLeft() {
       setTimeLeft(new Date(closesAt).getTime() - Date.now())
+    }
+
+    updateTimeLeft()
+    const interval = setInterval(() => {
+      updateTimeLeft()
     }, 30000)
     return () => clearInterval(interval)
   }, [closesAt])
 
-  const isExpired = timeLeft <= 0
-  const isUrgent = timeLeft > 0 && timeLeft < 3600000 // < 1 hour
+  const isExpired = timeLeft !== null && timeLeft <= 0
+  const isUrgent = timeLeft !== null && timeLeft > 0 && timeLeft < 3600000 // < 1 hour
 
   return (
     <span
-      className={`text-xs font-medium ${
+      className={`ak-badge ${
         isExpired
-          ? 'text-gray-400'
+          ? 'bg-stone-100 text-stone-400'
           : isUrgent
-          ? 'text-amber-600'
-          : 'text-gray-500'
+          ? 'bg-amber-50 text-amber-700'
+          : 'bg-stone-100/80 text-stone-500'
       }`}
     >
-      {isExpired ? 'Closed' : `closes in ${formatTimeLeft(timeLeft)}`}
+      {timeLeft === null ? 'closes soon' : isExpired ? 'Closed' : `closes in ${formatTimeLeft(timeLeft)}`}
     </span>
   )
 }

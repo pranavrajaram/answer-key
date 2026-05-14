@@ -80,58 +80,58 @@ export default async function ActivityPage() {
   feed.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="ak-page">
       <Navbar profile={profile} />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-0">
+      <main className="ak-container py-6 sm:py-8">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Activity</h1>
-            <p className="text-sm text-gray-500 mt-0.5">What everyone's been up to</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Activity</h1>
+            <p className="mt-1 text-sm text-stone-500">What everyone&apos;s been up to</p>
           </div>
         </div>
 
         <TabNav />
 
-        <div className="max-w-xl">
+        <div className="max-w-2xl">
           {feed.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-8 text-center text-gray-400 text-sm">
+            <div className="ak-card p-8 text-center text-sm text-stone-400">
               No activity yet.
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="ak-card p-2 sm:p-3">
               {feed.map(item => (
-                <div key={item.type + item.id} className="flex gap-3 py-2.5 border-b border-gray-100 last:border-0">
+                <div key={item.type + item.id} className="flex gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/70">
                   {/* Dot */}
                   <div className="mt-1.5 shrink-0">
                     {item.type === 'bet' ? (
-                      <div className={`w-2 h-2 rounded-full ${item.isMe ? 'bg-teal-500' : 'bg-gray-300'}`} />
+                      <div className={`h-2 w-2 rounded-full ${item.isMe ? 'bg-teal-600' : 'bg-stone-300'}`} />
                     ) : (
-                      <div className="w-2 h-2 rounded-full bg-amber-400" />
+                      <div className="h-2 w-2 rounded-full bg-amber-400" />
                     )}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     {item.type === 'bet' ? (
-                      <p className="text-sm text-gray-700 leading-snug">
-                        <span className={`font-semibold ${item.isMe ? 'text-teal-700' : 'text-gray-900'}`}>
+                      <p className="text-sm leading-relaxed text-stone-700">
+                        <span className={`font-semibold ${item.isMe ? 'text-teal-700' : 'text-stone-950'}`}>
                           {item.isMe ? 'You' : item.username}
                         </span>
                         {' bet '}
-                        <span className="font-medium text-gray-900">{item.amount} pts</span>
+                        <span className="font-medium text-stone-950">{item.amount} pts</span>
                         {' on '}
-                        <span className="font-medium text-gray-900">{item.option}</span>
+                        <span className="font-medium text-stone-950">{item.option}</span>
                         {' in '}
-                        <Link href={`/markets/${item.marketId}`} className="text-teal-600 hover:underline">
+                        <Link href={`/markets/${item.marketId}`} className="ak-link">
                           {item.question}
                         </Link>
                       </p>
                     ) : (
-                      <p className="text-sm text-gray-700 leading-snug">
-                        <span className="font-semibold text-gray-900">{item.username}</span>
+                      <p className="text-sm leading-relaxed text-stone-700">
+                        <span className="font-semibold text-stone-950">{item.username}</span>
                         {' resolved '}
-                        <Link href={`/markets/${item.marketId}`} className="text-teal-600 hover:underline">
+                        <Link href={`/markets/${item.marketId}`} className="ak-link">
                           {item.question}
                         </Link>
                         {' — winner: '}
@@ -141,7 +141,7 @@ export default async function ActivityPage() {
                   </div>
 
                   {/* Time */}
-                  <span className="text-xs text-gray-400 shrink-0 mt-0.5">{timeAgo(item.ts)}</span>
+                  <span className="mt-0.5 shrink-0 text-xs text-stone-400">{timeAgo(item.ts)}</span>
                 </div>
               ))}
             </div>
