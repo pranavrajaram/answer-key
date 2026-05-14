@@ -26,6 +26,7 @@ export default function NewMarketPage() {
     { label: 'Yes', pct: 50 },
     { label: 'No', pct: 50 },
   ])
+  const [pctDrafts, setPctDrafts] = useState<string[]>(['50', '50'])
   const [closesAt, setClosesAt] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,34 +34,57 @@ export default function NewMarketPage() {
   const total = rows.reduce((s, r) => s + r.pct, 0)
   const totalOk = total === 100
 
+  const setRowsWithDrafts = useCallback((nextRows: OptionRow[]) => {
+    setRows(nextRows)
+    setPctDrafts(nextRows.map(row => String(row.pct)))
+  }, [])
+
   function addOption() {
     if (rows.length >= 6) return
     const n = rows.length + 1
     const splits = equalSplit(n)
-    setRows(prev =>
-      [...prev, { label: '', pct: 0 }].map((r, i) => ({ ...r, pct: splits[i] }))
-    )
+    const nextRows = [...rows, { label: '', pct: 0 }].map((r, i) => ({ ...r, pct: splits[i] }))
+    setRowsWithDrafts(nextRows)
   }
 
   function removeOption(i: number) {
     if (rows.length <= 2) return
     const next = rows.filter((_, idx) => idx !== i)
     const splits = equalSplit(next.length)
-    setRows(next.map((r, idx) => ({ ...r, pct: splits[idx] })))
+    setRowsWithDrafts(next.map((r, idx) => ({ ...r, pct: splits[idx] })))
   }
 
   function updateLabel(i: number, value: string) {
     setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, label: value } : r)))
   }
 
-  function updatePct(i: number, raw: string) {
-    const val = Math.max(1, Math.min(99, parseInt(raw) || 0))
-    setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, pct: val } : r)))
+  function updatePctDraft(i: number, raw: string) {
+    if (!/^\d{0,3}$/.test(raw)) return
+    setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? raw : draft)))
+  }
+
+  function commitPctDraft(i: number) {
+    const raw = pctDrafts[i]?.trim() ?? ''
+    const previousValue = rows[i]?.pct ?? 1
+    if (!raw) {
+      setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(previousValue) : draft)))
+      return
+    }
+
+    const parsed = Number.parseInt(raw, 10)
+    if (Number.isNaN(parsed)) {
+      setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(previousValue) : draft)))
+      return
+    }
+
+    const normalized = Math.max(1, Math.min(99, parsed))
+    setRows(prev => prev.map((row, idx) => (idx === i ? { ...row, pct: normalized } : row)))
+    setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(normalized) : draft)))
   }
 
   function redistribute() {
     const splits = equalSplit(rows.length)
-    setRows(prev => prev.map((r, i) => ({ ...r, pct: splits[i] })))
+    setRowsWithDrafts(rows.map((r, i) => ({ ...r, pct: splits[i] })))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -164,16 +188,35 @@ export default function NewMarketPage() {
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
                     />
                     <div className="relative w-20">
+                      {(() => {
+                        const draft = pctDrafts[i] ?? String(row.pct)
+                        const parsedDraft = draft === '' ? null : Number.parseInt(draft, 10)
+                        const hasDraftError = parsedDraft !== null && (Number.isNaN(parsedDraft) || parsedDraft < 1 || parsedDraft > 99)
+
+                        return (
                       <input
-                        type="number"
-                        value={row.pct}
-                        onChange={e => updatePct(i, e.target.value)}
-                        min={1}
-                        max={99}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={draft}
+                        onChange={e => updatePctDraft(i, e.target.value)}
+                        onBlur={() => commitPctDraft(i)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            commitPctDraft(i)
+                            e.currentTarget.blur()
+                          }
+                        }}
+                        aria-label={`Starting odds for option ${i + 1}`}
                         className={`w-full px-3 py-2 pr-6 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent tabular-nums ${
-                          totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
+                          hasDraftError
+                            ? 'border-red-300 bg-red-50'
+                            : totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
                         }`}
                       />
+                        )
+                      })()}
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">%</span>
                     </div>
                     {rows.length > 2 && (
@@ -195,6 +238,9 @@ export default function NewMarketPage() {
                 {totalOk && <span>✓</span>}
                 {!totalOk && <span>— must equal 100%</span>}
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Edit percentages freely, then click away or press Enter to apply. Each option must be between 1% and 99%.
+              </p>
 
               {rows.length < 6 && (
                 <button
