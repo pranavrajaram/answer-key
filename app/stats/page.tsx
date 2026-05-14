@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import TabNav from '@/components/TabNav'
+import StatsGraph, {
+  type StatsGraphSeries,
+  type StatsMetricData,
+  type StatsMetricKey,
+  type StatsMetricOption,
+} from '@/components/StatsGraph'
 
 export const revalidate = 0
 
@@ -24,16 +30,13 @@ export default async function StatsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: profiles }, { data: bets }, { data: resolvedMarkets }, { data: winTxns }] =
+  const [{ data: profile }, { data: profiles }, { data: bets }, { data: resolvedMarkets }, { data: transactions }] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('profiles').select('id, username, points_balance').order('points_balance', { ascending: false }),
-      supabase.from('bets').select('user_id, market_id, option, amount'),
+      supabase.from('bets').select('user_id, market_id, option, amount, created_at'),
       supabase.from('markets').select('id, resolved_option').not('resolved_option', 'is', null),
-      supabase
-        .from('transactions')
-        .select('user_id, amount')
-        .ilike('reason', 'Won market:%'),
+      supabase.from('transactions').select('user_id, amount, reason, created_at'),
     ])
 
   // Index resolved markets
@@ -84,7 +87,8 @@ export default async function StatsPage() {
   }
 
   // Tally winnings from transactions
-  for (const txn of winTxns ?? []) {
+  for (const txn of transactions ?? []) {
+    if (!txn.reason.startsWith('Won market:')) continue
     const s = statsMap.get(txn.user_id)
     if (!s) continue
     s.totalEarned += txn.amount
@@ -101,6 +105,153 @@ export default async function StatsPage() {
   }
 
   const stats = [...statsMap.values()].sort((a, b) => b.balance - a.balance)
+  const palette = ['#0f766e', '#14b8a6', '#0891b2', '#7c3aed', '#f97316', '#dc2626', '#4f46e5']
+
+  const betsByUserSorted = new Map<string, { amount: number; marketId: string; option: string; createdAt: string }[]>()
+  const txnsByUserSorted = new Map<string, { amount: number; reason: string; createdAt: string }[]>()
+
+  for (const bet of bets ?? []) {
+    if (!betsByUserSorted.has(bet.user_id)) betsByUserSorted.set(bet.user_id, [])
+    betsByUserSorted.get(bet.user_id)!.push({
+      amount: bet.amount,
+      marketId: bet.market_id,
+      option: bet.option,
+      createdAt: bet.created_at,
+    })
+  }
+  for (const txn of transactions ?? []) {
+    if (!txnsByUserSorted.has(txn.user_id)) txnsByUserSorted.set(txn.user_id, [])
+    txnsByUserSorted.get(txn.user_id)!.push({
+      amount: txn.amount,
+      reason: txn.reason,
+      createdAt: txn.created_at,
+    })
+  }
+
+  for (const userBets of betsByUserSorted.values()) {
+    userBets.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+  for (const userTxns of txnsByUserSorted.values()) {
+    userTxns.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+
+  const timeline = Array.from(
+    new Set([
+      ...(bets ?? []).map(bet => bet.created_at),
+      ...(transactions ?? []).map(txn => txn.created_at),
+    ])
+  ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+
+  const graphTimestamps = timeline.length > 0 ? timeline : [new Date().toISOString()]
+
+  const metricOptions: StatsMetricOption[] = [
+    {
+      key: 'balance',
+      label: 'Points balance',
+      description: 'Balance over time for every player (default).',
+      valueFormat: 'number',
+    },
+    {
+      key: 'totalWagered',
+      label: 'Total wagered',
+      description: 'Cumulative points spent on bets.',
+      valueFormat: 'number',
+    },
+    {
+      key: 'totalBets',
+      label: 'Total bets',
+      description: 'Running count of bets placed.',
+      valueFormat: 'number',
+    },
+    {
+      key: 'marketsWon',
+      label: 'Markets won',
+      description: 'Running count of resolved markets each player won.',
+      valueFormat: 'number',
+    },
+    {
+      key: 'winRate',
+      label: 'Win rate',
+      description: 'Resolved-market win rate over time.',
+      valueFormat: 'percent',
+    },
+  ]
+
+  function normalizePoint(value: number | null): {
+    value: number | null
+    annotation: 'zero' | 'null' | null
+  } {
+    if (value === null) return { value: null, annotation: 'null' }
+    if (value === 0) return { value: null, annotation: 'zero' }
+    return { value, annotation: null }
+  }
+
+  function buildMetricSeries(metricKey: StatsMetricKey): StatsGraphSeries[] {
+    return stats.map((stat, index) => {
+      const userBets = betsByUserSorted.get(stat.id) ?? []
+      const userTxns = txnsByUserSorted.get(stat.id) ?? []
+      const txnSum = userTxns.reduce((sum, txn) => sum + txn.amount, 0)
+      const startingBalance = stat.balance - txnSum
+
+      let betPointer = 0
+      let txnPointer = 0
+      let runningBalance = startingBalance
+      let runningWagered = 0
+      let runningBets = 0
+      const enteredMarkets = new Set<string>()
+      const wonMarkets = new Set<string>()
+
+      const points = graphTimestamps.map(timestamp => {
+        const ts = new Date(timestamp).getTime()
+
+        while (txnPointer < userTxns.length && new Date(userTxns[txnPointer].createdAt).getTime() <= ts) {
+          runningBalance += userTxns[txnPointer].amount
+          txnPointer += 1
+        }
+
+        while (betPointer < userBets.length && new Date(userBets[betPointer].createdAt).getTime() <= ts) {
+          const bet = userBets[betPointer]
+          runningBets += 1
+          runningWagered += bet.amount
+          if (resolvedMap.has(bet.marketId)) {
+            enteredMarkets.add(bet.marketId)
+            if (resolvedMap.get(bet.marketId) === bet.option) {
+              wonMarkets.add(bet.marketId)
+            }
+          }
+          betPointer += 1
+        }
+
+        let rawValue: number | null = null
+        if (metricKey === 'balance') rawValue = runningBalance
+        if (metricKey === 'totalWagered') rawValue = runningWagered
+        if (metricKey === 'totalBets') rawValue = runningBets
+        if (metricKey === 'marketsWon') rawValue = wonMarkets.size
+        if (metricKey === 'winRate') {
+          rawValue = enteredMarkets.size > 0 ? wonMarkets.size / enteredMarkets.size : null
+        }
+
+        const normalized = normalizePoint(rawValue)
+        return {
+          timestamp,
+          value: normalized.value,
+          annotation: normalized.annotation,
+        }
+      })
+
+      return {
+        userId: stat.id,
+        username: stat.username,
+        color: palette[index % palette.length],
+        points,
+      }
+    })
+  }
+
+  const graphMetrics: StatsMetricData[] = metricOptions.map(option => ({
+    option,
+    series: buildMetricSeries(option.key),
+  }))
 
   function plColor(n: number) {
     if (n > 0) return 'text-teal-600'
@@ -126,6 +277,10 @@ export default async function StatsPage() {
         </div>
 
         <TabNav />
+
+        <div className="mt-5 mb-5">
+          <StatsGraph metrics={graphMetrics} defaultMetric="balance" />
+        </div>
 
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
