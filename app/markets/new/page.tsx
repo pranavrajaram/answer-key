@@ -27,7 +27,9 @@ export default function NewMarketPage() {
     { label: 'No', pct: 50 },
   ])
   const [pctDrafts, setPctDrafts] = useState<string[]>(['50', '50'])
-  const [closesAt, setClosesAt] = useState('')
+  /** yyyy-MM-dd and HH:mm — combined for submit as local datetime */
+  const [closeDate, setCloseDate] = useState('')
+  const [closeTime, setCloseTime] = useState('18:00')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -95,7 +97,10 @@ export default function NewMarketPage() {
     if (cleaned.length < 2) { setError('Need at least 2 options'); return }
     if (new Set(cleaned.map(r => r.label)).size !== cleaned.length) { setError('Options must be unique'); return }
     if (!totalOk) { setError('Percentages must add up to exactly 100'); return }
-    if (!closesAt) { setError('Choose a closing date'); return }
+    if (!closeDate || !closeTime) {
+      setError('Choose a closing date and time')
+      return
+    }
 
 
     setLoading(true)
@@ -113,7 +118,7 @@ export default function NewMarketPage() {
         options: cleaned.map(r => r.label),
         q_values: qValues,
         b: 100,
-        closes_at: new Date(closesAt).toISOString(),
+        closes_at: new Date(`${closeDate}T${closeTime}`).toISOString(),
       })
       .select('id')
       .single()
@@ -253,32 +258,68 @@ export default function NewMarketPage() {
               )}
             </div>
 
-            {/* Closing date */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+            {/* Closing date + time — separate native pickers look cleaner than one datetime-local control */}
+            <div className="space-y-3">
+              <label id="closes-at-label" className="block text-sm font-medium text-gray-700">
                 Closes at
               </label>
-              <div className="relative group">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors">
-                  <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
-                    <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M6.5 2.8v2.5M13.5 2.8v2.5M3.5 8h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </span>
-                <input
-                  type="datetime-local"
-                  value={closesAt}
-                  onChange={e => setClosesAt(e.target.value)}
-                  required
-                  aria-describedby="closes-at-help"
-                  className="w-full rounded-xl border border-gray-300 bg-white/95 py-2.5 pl-9 pr-20 text-sm text-gray-800 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition placeholder:text-gray-400 hover:border-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-                />
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500">
-                  Local
-                </span>
+              <div
+                role="group"
+                aria-labelledby="closes-at-label"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-2xl border border-gray-200/90 bg-gradient-to-b from-white to-stone-50/80 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+              >
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                    Date
+                  </span>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+                        <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M6.5 2.8v2.5M13.5 2.8v2.5M3.5 8h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <input
+                      type="date"
+                      value={closeDate}
+                      onChange={e => setCloseDate(e.target.value)}
+                      min={(() => {
+                        const d = new Date()
+                        const y = d.getFullYear()
+                        const m = String(d.getMonth() + 1).padStart(2, '0')
+                        const day = String(d.getDate()).padStart(2, '0')
+                        return `${y}-${m}-${day}`
+                      })()}
+                      required
+                      aria-describedby="closes-at-help"
+                      className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                    Time
+                  </span>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+                        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M10 6.2V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <input
+                      type="time"
+                      value={closeTime}
+                      onChange={e => setCloseTime(e.target.value)}
+                      required
+                      aria-describedby="closes-at-help"
+                      className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                    />
+                  </div>
+                </div>
               </div>
               <p id="closes-at-help" className="text-xs text-gray-500">
-                Pick the deadline for new bets. The selected date and time uses your local timezone.
+                Deadline for new bets. Uses your device&apos;s local date and time.
               </p>
             </div>
           </div>
