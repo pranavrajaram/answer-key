@@ -26,41 +26,67 @@ export default function NewMarketPage() {
     { label: 'Yes', pct: 50 },
     { label: 'No', pct: 50 },
   ])
-  const [closesAt, setClosesAt] = useState('')
+  const [pctDrafts, setPctDrafts] = useState<string[]>(['50', '50'])
+  /** yyyy-MM-dd and HH:mm — combined for submit as local datetime */
+  const [closeDate, setCloseDate] = useState('')
+  const [closeTime, setCloseTime] = useState('18:00')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const total = rows.reduce((s, r) => s + r.pct, 0)
   const totalOk = total === 100
 
+  const setRowsWithDrafts = useCallback((nextRows: OptionRow[]) => {
+    setRows(nextRows)
+    setPctDrafts(nextRows.map(row => String(row.pct)))
+  }, [])
+
   function addOption() {
     if (rows.length >= 6) return
     const n = rows.length + 1
     const splits = equalSplit(n)
-    setRows(prev =>
-      [...prev, { label: '', pct: 0 }].map((r, i) => ({ ...r, pct: splits[i] }))
-    )
+    const nextRows = [...rows, { label: '', pct: 0 }].map((r, i) => ({ ...r, pct: splits[i] }))
+    setRowsWithDrafts(nextRows)
   }
 
   function removeOption(i: number) {
     if (rows.length <= 2) return
     const next = rows.filter((_, idx) => idx !== i)
     const splits = equalSplit(next.length)
-    setRows(next.map((r, idx) => ({ ...r, pct: splits[idx] })))
+    setRowsWithDrafts(next.map((r, idx) => ({ ...r, pct: splits[idx] })))
   }
 
   function updateLabel(i: number, value: string) {
     setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, label: value } : r)))
   }
 
-  function updatePct(i: number, raw: string) {
-    const val = Math.max(1, Math.min(99, parseInt(raw) || 0))
-    setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, pct: val } : r)))
+  function updatePctDraft(i: number, raw: string) {
+    if (!/^\d{0,3}$/.test(raw)) return
+    setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? raw : draft)))
+  }
+
+  function commitPctDraft(i: number) {
+    const raw = pctDrafts[i]?.trim() ?? ''
+    const previousValue = rows[i]?.pct ?? 1
+    if (!raw) {
+      setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(previousValue) : draft)))
+      return
+    }
+
+    const parsed = Number.parseInt(raw, 10)
+    if (Number.isNaN(parsed)) {
+      setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(previousValue) : draft)))
+      return
+    }
+
+    const normalized = Math.max(1, Math.min(99, parsed))
+    setRows(prev => prev.map((row, idx) => (idx === i ? { ...row, pct: normalized } : row)))
+    setPctDrafts(prev => prev.map((draft, idx) => (idx === i ? String(normalized) : draft)))
   }
 
   function redistribute() {
     const splits = equalSplit(rows.length)
-    setRows(prev => prev.map((r, i) => ({ ...r, pct: splits[i] })))
+    setRowsWithDrafts(rows.map((r, i) => ({ ...r, pct: splits[i] })))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,7 +97,10 @@ export default function NewMarketPage() {
     if (cleaned.length < 2) { setError('Need at least 2 options'); return }
     if (new Set(cleaned.map(r => r.label)).size !== cleaned.length) { setError('Options must be unique'); return }
     if (!totalOk) { setError('Percentages must add up to exactly 100'); return }
-    if (!closesAt) { setError('Choose a closing date'); return }
+    if (!closeDate || !closeTime) {
+      setError('Choose a closing date and time')
+      return
+    }
 
 
     setLoading(true)
@@ -89,7 +118,7 @@ export default function NewMarketPage() {
         options: cleaned.map(r => r.label),
         q_values: qValues,
         b: 100,
-        closes_at: new Date(closesAt).toISOString(),
+        closes_at: new Date(`${closeDate}T${closeTime}`).toISOString(),
       })
       .select('id')
       .single()
@@ -164,16 +193,35 @@ export default function NewMarketPage() {
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
                     />
                     <div className="relative w-20">
+                      {(() => {
+                        const draft = pctDrafts[i] ?? String(row.pct)
+                        const parsedDraft = draft === '' ? null : Number.parseInt(draft, 10)
+                        const hasDraftError = parsedDraft !== null && (Number.isNaN(parsedDraft) || parsedDraft < 1 || parsedDraft > 99)
+
+                        return (
                       <input
-                        type="number"
-                        value={row.pct}
-                        onChange={e => updatePct(i, e.target.value)}
-                        min={1}
-                        max={99}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={draft}
+                        onChange={e => updatePctDraft(i, e.target.value)}
+                        onBlur={() => commitPctDraft(i)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            commitPctDraft(i)
+                            e.currentTarget.blur()
+                          }
+                        }}
+                        aria-label={`Starting odds for option ${i + 1}`}
                         className={`w-full px-3 py-2 pr-6 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent tabular-nums ${
-                          totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
+                          hasDraftError
+                            ? 'border-red-300 bg-red-50'
+                            : totalOk ? 'border-gray-300' : 'border-amber-300 bg-amber-50'
                         }`}
                       />
+                        )
+                      })()}
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">%</span>
                     </div>
                     {rows.length > 2 && (
@@ -195,6 +243,9 @@ export default function NewMarketPage() {
                 {totalOk && <span>✓</span>}
                 {!totalOk && <span>— must equal 100%</span>}
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Edit percentages freely, then click away or press Enter to apply. Each option must be between 1% and 99%.
+              </p>
 
               {rows.length < 6 && (
                 <button
@@ -207,19 +258,69 @@ export default function NewMarketPage() {
               )}
             </div>
 
-            {/* Closing date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            {/* Closing date + time — separate native pickers look cleaner than one datetime-local control */}
+            <div className="space-y-3">
+              <label id="closes-at-label" className="block text-sm font-medium text-gray-700">
                 Closes at
               </label>
-              <input
-                type="datetime-local"
-                value={closesAt}
-
-                onChange={e => setClosesAt(e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
+              <div
+                role="group"
+                aria-labelledby="closes-at-label"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-2xl border border-gray-200/90 bg-gradient-to-b from-white to-stone-50/80 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+              >
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                    Date
+                  </span>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+                        <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M6.5 2.8v2.5M13.5 2.8v2.5M3.5 8h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <input
+                      type="date"
+                      value={closeDate}
+                      onChange={e => setCloseDate(e.target.value)}
+                      min={(() => {
+                        const d = new Date()
+                        const y = d.getFullYear()
+                        const m = String(d.getMonth() + 1).padStart(2, '0')
+                        const day = String(d.getDate()).padStart(2, '0')
+                        return `${y}-${m}-${day}`
+                      })()}
+                      required
+                      aria-describedby="closes-at-help"
+                      className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                    Time
+                  </span>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-teal-700/80">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+                        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M10 6.2V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <input
+                      type="time"
+                      value={closeTime}
+                      onChange={e => setCloseTime(e.target.value)}
+                      required
+                      aria-describedby="closes-at-help"
+                      className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-inner shadow-gray-100/80 transition hover:border-teal-300/60 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25 [color-scheme:light]"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p id="closes-at-help" className="text-xs text-gray-500">
+                Deadline for new bets. Uses your device&apos;s local date and time.
+              </p>
             </div>
           </div>
 
