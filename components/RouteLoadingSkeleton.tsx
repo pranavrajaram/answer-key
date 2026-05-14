@@ -15,14 +15,14 @@ const tabs: { label: string; key: ActiveTab }[] = [
 ]
 
 function SkeletonLine({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-stone-200/80 ${className}`} />
+  return <div className={`animate-pulse rounded-full bg-stone-200/80 dark:bg-stone-600/70 ${className}`} />
 }
 
 function HeaderSkeleton() {
   return (
-    <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-[#f8f4ec]">
+    <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-[var(--ak-bg)] dark:border-stone-700/60">
       <div className="ak-container flex h-16 items-center justify-between">
-        <span className="font-semibold tracking-tight text-stone-950">Answer Key</span>
+        <span className="font-semibold tracking-tight text-stone-950 dark:text-stone-100">Answer Key</span>
         <div className="flex items-center gap-3">
           <SkeletonLine className="h-8 w-20" />
           <SkeletonLine className="hidden h-4 w-20 sm:block" />
@@ -34,12 +34,12 @@ function HeaderSkeleton() {
 
 function TabSkeleton({ activeTab = 'markets' }: { activeTab?: ActiveTab }) {
   return (
-    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 sm:inline-grid">
+    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-700/60 dark:bg-stone-900/55 sm:inline-grid">
       {tabs.map(tab => (
         <div
           key={tab.key}
           className={`rounded-xl px-3 py-2 text-center text-sm font-semibold leading-none ${
-            activeTab === tab.key ? 'bg-stone-950 text-white' : 'text-stone-400'
+            activeTab === tab.key ? 'bg-stone-950 text-white' : 'text-stone-400 dark:text-stone-500'
           }`}
         >
           {tab.label}
@@ -146,8 +146,8 @@ export default function RouteLoadingSkeleton({
       <main className="ak-container py-6 sm:py-8">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">{title}</h1>
-            <p className="mt-1 text-sm text-stone-500">{subtitle}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">{title}</h1>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{subtitle}</p>
           </div>
         </div>
         {showTabs && <TabSkeleton activeTab={activeTab} />}

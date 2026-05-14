@@ -82,8 +82,8 @@ export default async function DashboardPage() {
       <main className="ak-container space-y-6 py-6 sm:py-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Markets</h1>
-            <p className="mt-1 text-sm text-stone-500">Welcome back, {profile?.username}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Markets</h1>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Welcome back, {profile?.username}</p>
           </div>
           <Link
             href="/markets/new"
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
                 Open ({openMarkets.length})
               </h2>
               {openMarkets.length === 0 ? (
-                <div className="ak-card p-8 text-center text-sm text-stone-400">
+                <div className="ak-card p-8 text-center text-sm text-stone-400 dark:text-stone-500">
                   No open markets yet.{' '}
                   <Link href="/markets/new" className="ak-link">
                     Create one
@@ -145,17 +145,19 @@ export default async function DashboardPage() {
                         <div className="ak-card ak-card-hover p-4">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-sm font-semibold text-stone-900">{market.question}</p>
-                              <p className="mt-1 text-xs text-stone-500">
+                              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{market.question}</p>
+                              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                                 Winner:{' '}
-                                <span className="font-medium text-stone-700">{market.resolved_option}</span>
+                                <span className="font-medium text-stone-700 dark:text-stone-300">{market.resolved_option}</span>
                                 {' · '}Bet {totalSpent} pts on{' '}
                                 {bets.map((b: BetRow) => b.option).join(', ')}
                               </p>
                             </div>
                             <span
                               className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${
-                                won ? 'text-teal-700 bg-teal-50' : 'text-red-600 bg-red-50'
+                                won
+                                  ? 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+                                  : 'bg-red-50 text-red-600 dark:bg-red-950/35 dark:text-red-400'
                               }`}
                             >
                               {won ? '✓ Won' : `−${totalSpent}`}

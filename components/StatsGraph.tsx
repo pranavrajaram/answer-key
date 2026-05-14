@@ -158,15 +158,15 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
     <section className="ak-card p-4 sm:p-5 space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-stone-900">Performance trend</h2>
-          <p className="mt-1 text-xs text-stone-500">{metric.option.description}</p>
+          <h2 className="text-sm font-semibold text-stone-900 dark:text-stone-100">Performance trend</h2>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{metric.option.description}</p>
         </div>
-        <label className="flex items-center gap-2 text-xs text-stone-600">
+        <label className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
           Metric
           <select
             value={metric.option.key}
             onChange={event => setSelectedMetric(event.target.value as StatsMetricKey)}
-            className="rounded-xl border border-stone-300/80 bg-white/90 px-2.5 py-1.5 text-sm text-stone-700 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10"
+            className="rounded-xl border border-stone-300/80 bg-white/90 px-2.5 py-1.5 text-sm text-stone-700 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 dark:border-stone-600/70 dark:bg-stone-900/75 dark:text-stone-200 dark:focus:border-teal-400 dark:focus:ring-teal-500/15"
           >
             {metrics.map(item => (
               <option key={item.option.key} value={item.option.key}>
@@ -177,14 +177,14 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
         </label>
       </div>
 
-      <div className="rounded-2xl border border-stone-200/70 bg-stone-50/70 p-2 sm:p-3">
+      <div className="rounded-2xl border border-stone-200/70 bg-stone-50/70 p-2 sm:p-3 dark:border-stone-700/60 dark:bg-stone-900/40">
         <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} role="img" aria-label={`${metric.option.label} chart`} className="w-full h-[260px]">
           <line
             x1={PADDING_X}
             x2={CHART_WIDTH - PADDING_X}
             y1={CHART_HEIGHT - PADDING_BOTTOM}
             y2={CHART_HEIGHT - PADDING_BOTTOM}
-            stroke="#d6d3d1"
+            stroke="var(--ak-chart-line)"
             strokeWidth="1"
           />
           <line
@@ -192,7 +192,7 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             x2={PADDING_X}
             y1={PADDING_TOP}
             y2={CHART_HEIGHT - PADDING_BOTTOM}
-            stroke="#d6d3d1"
+            stroke="var(--ak-chart-line)"
             strokeWidth="1"
           />
 
@@ -221,7 +221,7 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
                       cy={getY(lastVisible.point.value)}
                       r="3.5"
                       fill={series.color}
-                      stroke="white"
+                      stroke="var(--ak-chart-marker-ring)"
                       strokeWidth="1.5"
                     />
                   )}
@@ -230,17 +230,17 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             })}
 
           {!chartData.hasPlotData && (
-            <text x={CHART_WIDTH / 2} y={CHART_HEIGHT / 2} textAnchor="middle" fill="#78716c" fontSize="16">
+            <text x={CHART_WIDTH / 2} y={CHART_HEIGHT / 2} textAnchor="middle" fill="var(--ak-chart-text)" fontSize="16">
               No plottable points yet for this metric
             </text>
           )}
 
           {pointCount > 0 && (
             <>
-              <text x={PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#78716c" textAnchor="start">
+              <text x={PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="var(--ak-chart-text)" textAnchor="start">
                 {formatDateLabel(metric.series[0].points[0].timestamp)}
               </text>
-              <text x={CHART_WIDTH - PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#78716c" textAnchor="end">
+              <text x={CHART_WIDTH - PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="var(--ak-chart-text)" textAnchor="end">
                 {formatDateLabel(metric.series[0].points[pointCount - 1].timestamp)}
               </text>
             </>
@@ -258,18 +258,21 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             .find(item => item.point.value !== null)
 
           return (
-            <div key={series.userId} className="rounded-xl border border-stone-200/80 bg-white/80 px-3 py-2 text-xs text-stone-600">
+            <div
+              key={series.userId}
+              className="rounded-xl border border-stone-200/80 bg-white/80 px-3 py-2 text-xs text-stone-600 dark:border-stone-700/60 dark:bg-stone-900/45 dark:text-stone-400"
+            >
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: series.color }} aria-hidden="true" />
-                <span className="font-medium text-stone-700">{series.username}</span>
-                <span className="text-stone-400">
+                <span className="font-medium text-stone-700 dark:text-stone-200">{series.username}</span>
+                <span className="text-stone-400 dark:text-stone-500">
                   {latestVisible && latestVisible.point.value !== null
                     ? formatMetricValue(latestVisible.point.value, metric.option.valueFormat)
                     : '—'}
                 </span>
               </div>
               {(hiddenZeros > 0 || hiddenNulls > 0) && (
-                <p className="mt-1 text-[11px] text-amber-700">
+                <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-400/90">
                   Hidden points: {hiddenZeros > 0 ? `${hiddenZeros} zero` : ''}
                   {hiddenZeros > 0 && hiddenNulls > 0 ? ', ' : ''}
                   {hiddenNulls > 0 ? `${hiddenNulls} null` : ''}

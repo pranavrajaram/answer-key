@@ -38,27 +38,37 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
         return (
           <div
             key={p.id}
-            className={`overflow-hidden rounded-2xl border ${isMe ? 'border-teal-200/80 bg-teal-50/70' : 'border-stone-200/80 bg-white/70'}`}
+            className={`overflow-hidden rounded-2xl border ${
+              isMe
+                ? 'border-teal-200/80 bg-teal-50/70 dark:border-teal-700/40 dark:bg-teal-950/30'
+                : 'border-stone-200/80 bg-white/70 dark:border-stone-700/60 dark:bg-stone-900/45'
+            }`}
           >
             {/* Leaderboard row */}
             <button
               onClick={() => positions.length > 0 && toggle(p.id)}
               className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                isMe ? 'hover:bg-teal-100/60' : 'hover:bg-white'
+                isMe
+                  ? 'hover:bg-teal-100/60 dark:hover:bg-teal-900/25'
+                  : 'hover:bg-white dark:hover:bg-stone-800/40'
               } ${positions.length === 0 ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <div className="flex items-center gap-3">
-                <span className="w-4 text-xs tabular-nums text-stone-400">{i + 1}</span>
-                <span className={`text-sm ${isMe ? 'font-semibold text-teal-800' : 'font-medium text-stone-800'}`}>
+                <span className="w-4 text-xs tabular-nums text-stone-400 dark:text-stone-500">{i + 1}</span>
+                <span
+                  className={`text-sm ${
+                    isMe ? 'font-semibold text-teal-800 dark:text-teal-300' : 'font-medium text-stone-800 dark:text-stone-200'
+                  }`}
+                >
                   {p.username}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-stone-700 tabular-nums">
+                <span className="text-sm font-semibold text-stone-700 tabular-nums dark:text-stone-200">
                   {p.points_balance.toLocaleString()}
                 </span>
                 {positions.length > 0 && (
-                  <span className="text-xs text-stone-400">
+                  <span className="text-xs text-stone-400 dark:text-stone-500">
                     {isOpen ? '▴' : '▾'}
                   </span>
                 )}
@@ -67,17 +77,23 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
 
             {/* Portfolio dropdown */}
             {isOpen && positions.length > 0 && (
-              <div className={`border-t px-4 py-2 space-y-1 ${isMe ? 'border-teal-100 bg-teal-50/50' : 'border-stone-100 bg-stone-50/70'}`}>
+              <div
+                className={`border-t px-4 py-2 space-y-1 ${
+                  isMe
+                    ? 'border-teal-100 bg-teal-50/50 dark:border-teal-800/40 dark:bg-teal-950/20'
+                    : 'border-stone-100 bg-stone-50/70 dark:border-stone-700/50 dark:bg-stone-900/35'
+                }`}
+              >
                 {positions.map(pos => (
                   <Link
                     key={pos.marketId}
                     href={`/markets/${pos.marketId}`}
                     className="group flex items-start justify-between gap-2 py-1.5"
                   >
-                    <span className="line-clamp-2 text-xs leading-snug text-stone-600 transition-colors group-hover:text-teal-700">
+                    <span className="line-clamp-2 text-xs leading-snug text-stone-600 transition-colors group-hover:text-teal-700 dark:text-stone-400 dark:group-hover:text-teal-400">
                       {pos.question}
                     </span>
-                    <span className="shrink-0 whitespace-nowrap text-xs text-stone-400 transition-colors group-hover:text-teal-600">
+                    <span className="shrink-0 whitespace-nowrap text-xs text-stone-400 transition-colors group-hover:text-teal-600 dark:text-stone-500 dark:group-hover:text-teal-400">
                       {pos.options.join(', ')} →
                     </span>
                   </Link>

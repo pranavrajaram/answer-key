@@ -11,10 +11,36 @@
   --ak-accent: #0f766e;
   --ak-accent-soft: #e4f5f1;
   --ak-warm: #f5efe3;
+  --ak-card-hover-bg: #ffffff;
+  --ak-shadow: rgba(41, 37, 36, 0.05);
+  --ak-chart-line: #d6d3d1;
+  --ak-chart-text: #78716c;
+  --ak-chart-marker-ring: #fffdf8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ak-bg: #1c1917;
+    --ak-ink: #e7e5e4;
+    --ak-muted: #a8a29e;
+    --ak-border: rgba(255, 255, 255, 0.09);
+    --ak-border-strong: rgba(255, 255, 255, 0.16);
+    --ak-surface: #292524;
+    --ak-surface-solid: #292524;
+    --ak-accent: #5eead4;
+    --ak-accent-soft: rgba(94, 234, 212, 0.12);
+    --ak-warm: #1c1917;
+    --ak-card-hover-bg: #3f3f46;
+    --ak-shadow: rgba(0, 0, 0, 0.35);
+    --ak-chart-line: #44403c;
+    --ak-chart-text: #a8a29e;
+    --ak-chart-marker-ring: #292524;
+  }
 }
 
 html {
   background: var(--ak-bg);
+  color-scheme: light dark;
 }
 
 body {
@@ -29,6 +55,13 @@ body {
   color: #134e4a;
 }
 
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background: rgba(94, 234, 212, 0.22);
+    color: #042f2e;
+  }
+}
+
 @layer components {
   .ak-page {
     @apply min-h-screen;
@@ -41,7 +74,7 @@ body {
   .ak-card {
     background: var(--ak-surface);
     border: 1px solid var(--ak-border);
-    box-shadow: 0 1px 2px rgba(41, 37, 36, 0.05);
+    box-shadow: 0 1px 2px var(--ak-shadow);
     @apply rounded-2xl;
   }
 
@@ -57,27 +90,27 @@ body {
 
   .ak-card-hover:hover {
     border-color: var(--ak-border-strong);
-    background: #ffffff;
+    background: var(--ak-card-hover-bg);
   }
 
   .ak-section-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400;
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400 dark:text-stone-500;
   }
 
   .ak-field {
-    @apply w-full rounded-xl border border-stone-300/80 bg-white/90 px-3 py-2 text-sm text-stone-900 placeholder-stone-400 transition focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10;
+    @apply w-full rounded-xl border border-stone-300/80 bg-white/90 px-3 py-2 text-sm text-stone-900 placeholder-stone-400 transition focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10 dark:border-stone-600/70 dark:bg-stone-900/75 dark:text-stone-100 dark:placeholder-stone-500 dark:focus:border-teal-400 dark:focus:ring-teal-500/15;
   }
 
   .ak-button-primary {
-    @apply rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-700/15 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-700/15 disabled:cursor-not-allowed disabled:opacity-55 dark:bg-teal-600 dark:hover:bg-teal-500 dark:focus:ring-teal-500/20;
   }
 
   .ak-button-secondary {
-    @apply rounded-xl border border-stone-300/80 bg-white/80 px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 hover:text-stone-950 focus:outline-none focus:ring-4 focus:ring-stone-400/15 disabled:opacity-55;
+    @apply rounded-xl border border-stone-300/80 bg-white/80 px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 hover:text-stone-950 focus:outline-none focus:ring-4 focus:ring-stone-400/15 disabled:opacity-55 dark:border-stone-600/70 dark:bg-stone-900/60 dark:text-stone-200 dark:hover:bg-stone-800/70 dark:hover:text-stone-50 dark:focus:ring-stone-500/20;
   }
 
   .ak-link {
-    @apply text-teal-700 transition-colors hover:text-teal-900 hover:underline underline-offset-4;
+    @apply text-teal-700 transition-colors hover:text-teal-900 hover:underline underline-offset-4 dark:text-teal-400 dark:hover:text-teal-300;
   }
 
   .ak-badge {

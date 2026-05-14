@@ -254,9 +254,9 @@ export default async function StatsPage() {
   }))
 
   function plColor(n: number) {
-    if (n > 0) return 'text-teal-600'
-    if (n < 0) return 'text-red-500'
-    return 'text-gray-400'
+    if (n > 0) return 'text-teal-600 dark:text-teal-400'
+    if (n < 0) return 'text-red-500 dark:text-red-400'
+    return 'text-gray-400 dark:text-stone-500'
   }
 
   function plFormat(n: number) {
@@ -271,8 +271,8 @@ export default async function StatsPage() {
       <main className="ak-container py-6 sm:py-8">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Stats</h1>
-            <p className="mt-1 text-sm text-stone-500">All-time performance</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Stats</h1>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">All-time performance</p>
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export default async function StatsPage() {
         <div className="ak-card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-100/90 bg-stone-50/60">
+              <tr className="border-b border-stone-100/90 bg-stone-50/60 dark:border-stone-700/60 dark:bg-stone-900/50">
                 <th className="ak-section-label px-4 py-3 text-left">#</th>
                 <th className="ak-section-label px-4 py-3 text-left">Player</th>
                 <th className="ak-section-label px-4 py-3 text-right">Balance</th>
@@ -302,42 +302,54 @@ export default async function StatsPage() {
                 return (
                   <tr
                     key={s.id}
-                    className={`border-b border-stone-100/80 last:border-0 ${isMe ? 'bg-teal-50/80' : 'hover:bg-white/70'}`}
+                    className={`border-b border-stone-100/80 last:border-0 dark:border-stone-700/50 ${
+                      isMe ? 'bg-teal-50/80 dark:bg-teal-950/25' : 'hover:bg-white/70 dark:hover:bg-stone-800/35'
+                    }`}
                   >
-                    <td className="px-4 py-3 tabular-nums text-stone-400">{i + 1}</td>
+                    <td className="px-4 py-3 tabular-nums text-stone-400 dark:text-stone-500">{i + 1}</td>
                     <td className="px-4 py-3">
-                      <span className={`font-medium ${isMe ? 'text-teal-700' : 'text-stone-800'}`}>
+                      <span
+                        className={`font-medium ${isMe ? 'text-teal-700 dark:text-teal-400' : 'text-stone-800 dark:text-stone-200'}`}
+                      >
                         {s.username}
-                        {isMe && <span className="ml-1.5 text-xs text-teal-500">you</span>}
+                        {isMe && <span className="ml-1.5 text-xs text-teal-500 dark:text-teal-400">you</span>}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-stone-800 tabular-nums">
+                    <td className="px-4 py-3 text-right font-semibold text-stone-800 tabular-nums dark:text-stone-100">
                       {s.balance.toLocaleString()}
                     </td>
-                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell dark:text-stone-400">
                       {s.totalWagered > 0 ? s.totalWagered.toLocaleString() : '—'}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums hidden sm:table-cell">
                       {s.winRate !== null ? (
-                        <span className={s.winRate >= 0.5 ? 'font-medium text-teal-700' : 'text-stone-500'}>
+                        <span
+                          className={
+                            s.winRate >= 0.5 ? 'font-medium text-teal-700 dark:text-teal-400' : 'text-stone-500 dark:text-stone-400'
+                          }
+                        >
                           {Math.round(s.winRate * 100)}%
                         </span>
                       ) : (
-                        <span className="text-stone-300">—</span>
+                        <span className="text-stone-300 dark:text-stone-600">—</span>
                       )}
                     </td>
-                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell dark:text-stone-400">
                       {s.marketsEntered > 0 ? (
                         <span>
-                          <span className="font-medium text-stone-700">{s.marketsWon}</span>
-                          <span className="text-stone-400">/{s.marketsEntered}</span>
+                          <span className="font-medium text-stone-700 dark:text-stone-300">{s.marketsWon}</span>
+                          <span className="text-stone-400 dark:text-stone-500">/{s.marketsEntered}</span>
                         </span>
                       ) : '—'}
                     </td>
-                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell">
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell dark:text-stone-400">
                       {s.biggestWin > 0 ? (
-                        <span className="font-medium text-teal-700">+{s.biggestWin.toLocaleString()}</span>
-                      ) : '—'}
+                        <span className="font-medium text-teal-700 dark:text-teal-400">
+                          +{s.biggestWin.toLocaleString()}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                     <td className={`px-4 py-3 text-right font-semibold tabular-nums ${plColor(s.netPL)}`}>
                       {plFormat(s.netPL)}
@@ -349,7 +361,7 @@ export default async function StatsPage() {
           </table>
         </div>
 
-        <p className="mt-3 text-xs text-stone-400">
+        <p className="mt-3 text-xs text-stone-400 dark:text-stone-500">
           Win rate and P&L are calculated from resolved markets only.
         </p>
       </main>
