@@ -40,6 +40,9 @@ export default function RoutePrefetcher({
   const pathname = usePathname()
 
   const targets = useMemo(() => {
+    // Don't prefetch authenticated routes on the login page
+    if (pathname === '/login') return []
+
     const current = pathname ? normalizeHref(pathname) : null
     const unique = new Set<string>()
 
