@@ -1,24 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --ak-bg: #f7f3eb;
+  --ak-bg: #f8f4ec;
   --ak-ink: #1f2933;
   --ak-muted: #6b7280;
-  --ak-border: rgba(120, 113, 108, 0.22);
-  --ak-border-strong: rgba(94, 83, 71, 0.28);
-  --ak-surface: rgba(255, 255, 255, 0.82);
+  --ak-border: rgba(120, 113, 108, 0.2);
+  --ak-border-strong: rgba(94, 83, 71, 0.26);
+  --ak-surface: #fffdf8;
   --ak-surface-solid: #fffdf8;
   --ak-accent: #0f766e;
   --ak-accent-soft: #e4f5f1;
   --ak-warm: #f5efe3;
 }
 
+html {
+  background: var(--ak-bg);
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background:
-    radial-gradient(circle at top left, rgba(20, 184, 166, 0.08), transparent 30rem),
-    linear-gradient(180deg, #fbf8f1 0%, var(--ak-bg) 44%, #f8f5ee 100%);
+  background: var(--ak-bg);
   color: var(--ak-ink);
 }
 
@@ -33,13 +35,13 @@ body {
   }
 
   .ak-container {
-    @apply mx-auto max-w-4xl px-4;
+    @apply mx-auto w-full max-w-4xl px-4 sm:px-5;
   }
 
   .ak-card {
     background: var(--ak-surface);
     border: 1px solid var(--ak-border);
-    box-shadow: 0 1px 2px rgba(41, 37, 36, 0.04), 0 12px 40px rgba(87, 83, 78, 0.06);
+    box-shadow: 0 1px 2px rgba(41, 37, 36, 0.05);
     @apply rounded-2xl;
   }
 
@@ -50,12 +52,12 @@ body {
   }
 
   .ak-card-hover {
-    @apply transition-[border-color,box-shadow,background-color] duration-150;
+    @apply transition-colors duration-150;
   }
 
   .ak-card-hover:hover {
     border-color: var(--ak-border-strong);
-    box-shadow: 0 2px 4px rgba(41, 37, 36, 0.05), 0 18px 48px rgba(87, 83, 78, 0.09);
+    background: #ffffff;
   }
 
   .ak-section-label {

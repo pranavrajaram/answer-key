@@ -38,7 +38,7 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
         return (
           <div
             key={p.id}
-            className={`overflow-hidden rounded-2xl border shadow-sm ${isMe ? 'border-teal-200/80 bg-teal-50/70' : 'border-stone-200/80 bg-white/70'}`}
+            className={`overflow-hidden rounded-2xl border ${isMe ? 'border-teal-200/80 bg-teal-50/70' : 'border-stone-200/80 bg-white/70'}`}
           >
             {/* Leaderboard row */}
             <button
@@ -58,8 +58,8 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
                   {p.points_balance.toLocaleString()}
                 </span>
                 {positions.length > 0 && (
-                  <span className={`text-xs text-stone-400 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}>
-                    ▾
+                  <span className="text-xs text-stone-400">
+                    {isOpen ? '▴' : '▾'}
                   </span>
                 )}
               </div>

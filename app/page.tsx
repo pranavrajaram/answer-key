@@ -75,9 +75,9 @@ export default async function DashboardPage() {
     <div className="ak-page">
       <Navbar profile={profile} />
 
-      <main className="ak-container py-8 space-y-10">
-        <div className="flex items-center justify-between">
-          <div>
+      <main className="ak-container space-y-6 py-6 sm:py-8">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Markets</h1>
             <p className="mt-1 text-sm text-stone-500">Welcome back, {profile?.username}</p>
           </div>
@@ -90,8 +90,8 @@ export default async function DashboardPage() {
         </div>
 
         <TabNav />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-8">
+          <div className="space-y-6 xl:col-span-2">
             <section>
               <h2 className="ak-section-label mb-3">
                 Open ({openMarkets.length})
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <h2 className="ak-section-label mb-3">
               Leaderboard
             </h2>

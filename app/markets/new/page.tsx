@@ -135,7 +135,7 @@ export default function NewMarketPage() {
 
   return (
     <div className="ak-page">
-      <header className="border-b border-stone-200/70 bg-[#fbf8f1]/85 backdrop-blur-xl">
+      <header className="border-b border-stone-200/70 bg-[#f8f4ec]">
         <div className="ak-container flex h-16 items-center gap-3">
           <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800">
             ← Dashboard
@@ -145,14 +145,14 @@ export default function NewMarketPage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-10">
+      <main className="mx-auto w-full max-w-lg px-4 py-8 sm:py-10">
         <h1 className="mb-2 text-2xl font-semibold tracking-tight text-stone-950">Create a market</h1>
         <p className="mb-6 text-sm leading-relaxed text-stone-500">
           Set a clear question, choose the possible outcomes, and seed the starting odds.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="ak-card p-6 space-y-5">
+          <div className="ak-card space-y-5 p-4 sm:p-6">
 
             {/* Question */}
             <div>

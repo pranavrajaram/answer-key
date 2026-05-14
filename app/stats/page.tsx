@@ -268,8 +268,8 @@ export default async function StatsPage() {
     <div className="ak-page">
       <Navbar profile={profile} />
 
-      <main className="ak-container py-8">
-        <div className="flex items-center justify-between mb-0">
+      <main className="ak-container py-6 sm:py-8">
+        <div className="mb-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Stats</h1>
             <p className="mt-1 text-sm text-stone-500">All-time performance</p>
@@ -278,7 +278,7 @@ export default async function StatsPage() {
 
         <TabNav />
 
-        <div className="mt-5 mb-5">
+        <div className="mb-5">
           <StatsGraph metrics={graphMetrics} defaultMetric="balance" />
         </div>
 

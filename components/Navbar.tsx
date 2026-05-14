@@ -20,7 +20,7 @@ export default function Navbar({ profile }: NavbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-[#fbf8f1]/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-[#f8f4ec]">
       <div className="ak-container flex h-16 items-center justify-between">
         <Link href="/" className="font-semibold tracking-tight text-stone-950 transition-colors hover:text-teal-800">
           Answer Key

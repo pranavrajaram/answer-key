@@ -64,18 +64,18 @@ export default async function MarketPage({ params }: PageProps) {
     <div className="ak-page">
       <Navbar profile={profile} />
 
-      <main className="ak-container py-8">
-        <div className="flex items-center gap-2 text-sm text-stone-400 mb-6">
+      <main className="ak-container py-6 sm:py-8">
+        <div className="mb-5 flex items-center gap-2 text-sm text-stone-400">
           <Link href="/" className="transition-colors hover:text-stone-800">Dashboard</Link>
           <span>/</span>
           <span className="max-w-xs truncate text-stone-600">{market.question}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-8">
           {/* Left: market info + comments */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="ak-card p-6">
-              <div className="flex items-start justify-between gap-4 mb-5">
+          <div className="space-y-5 xl:col-span-2">
+            <div className="ak-card p-4 sm:p-6">
+              <div className="mb-5 flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
                 <h1 className="text-xl font-semibold leading-snug tracking-tight text-stone-950">
                   {market.question}
                 </h1>
@@ -98,7 +98,7 @@ export default async function MarketPage({ params }: PageProps) {
                 b={market.b}
               />
 
-              <div className="mt-4 flex items-center justify-between border-t border-stone-200/70 pt-4 text-xs text-stone-400">
+              <div className="mt-4 flex flex-col gap-1 border-t border-stone-200/70 pt-4 text-xs leading-relaxed text-stone-400 sm:flex-row sm:items-center sm:justify-between">
                 <span>
                   Created by{' '}
                   <span className="font-medium text-stone-600">
@@ -111,7 +111,7 @@ export default async function MarketPage({ params }: PageProps) {
 
             {/* Resolved payout breakdown */}
             {isResolved && (
-              <div className="ak-card p-6">
+              <div className="ak-card p-4 sm:p-6">
                 <h2 className="mb-4 font-semibold text-stone-900">Resolution</h2>
                 <div className="space-y-3">
                   {market.options.map((opt: string) => {
@@ -152,7 +152,7 @@ export default async function MarketPage({ params }: PageProps) {
 
             {/* Bet history */}
             {(bets ?? []).length > 0 && (
-              <div className="ak-card p-6">
+              <div className="ak-card p-4 sm:p-6">
                 <h2 className="mb-4 font-semibold text-stone-900">Recent bets</h2>
                 <div className="space-y-2">
                   {(bets ?? []).slice(0, 20).map((b: Bet) => (
@@ -181,7 +181,7 @@ export default async function MarketPage({ params }: PageProps) {
           </div>
 
           {/* Right: actions sidebar */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="space-y-4 xl:col-span-1">
             {isOpen && profile && (
               <BetPanel market={market} profile={profile} />
             )}
