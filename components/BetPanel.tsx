@@ -39,10 +39,9 @@ export default function BetPanel({ market, profile }: BetPanelProps) {
       ? lmsrProb(hypotheticalQ, selectedIndex, market.b)
       : null
 
-  // Rough payout estimate based on proportion of winning bets
-  // Simplified: payout ≈ amount / newProb (expected value proxy)
+  // Payout estimate locked to the pre-purchase probability (the price shown when you decide to buy)
   const estimatedPayout =
-    newProb !== null ? Math.round(amount / newProb) : null
+    currentProb !== null ? Math.round(amount / currentProb) : null
 
   const isClosed = new Date(market.closes_at) <= new Date()
 
