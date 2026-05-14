@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import MarketCard from '@/components/MarketCard'
 import LeaderboardWithPortfolio from '@/components/LeaderboardWithPortfolio'
 import TabNav from '@/components/TabNav'
+import RoutePrefetcher from '@/components/RoutePrefetcher'
 
 interface BetRow {
   user_id: string
@@ -74,6 +75,9 @@ export default async function DashboardPage() {
   return (
     <div className="ak-page">
       <Navbar profile={profile} />
+      <RoutePrefetcher
+        hrefs={(markets ?? []).slice(0, 12).map((market: Market) => `/markets/${market.id}`)}
+      />
 
       <main className="ak-container space-y-6 py-6 sm:py-8">
         <div className="flex items-start justify-between gap-3">

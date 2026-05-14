@@ -11,7 +11,7 @@ export default function MarketCard({ market }: MarketCardProps) {
   const isOpen = !market.resolved_option && new Date(market.closes_at) > new Date()
 
   return (
-    <Link href={`/markets/${market.id}`} className="block">
+    <Link href={`/markets/${market.id}`} prefetch className="block">
       <div className="ak-card ak-card-hover p-4 sm:p-5">
         <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-3">
           <h3 className="min-w-0 text-base font-semibold leading-snug text-stone-900">

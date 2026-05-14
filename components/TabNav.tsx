@@ -20,6 +20,7 @@ export default function TabNav() {
           <Link
             key={tab.href}
             href={tab.href}
+            prefetch
             className={`rounded-xl px-3 py-2 text-center text-sm font-semibold leading-none transition-colors ${
               active
                 ? 'bg-stone-950 text-white'
