@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -31,7 +32,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="ak-page flex flex-col items-center justify-center px-4">
+    <div className="ak-page relative flex flex-col items-center justify-center px-4">
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <ThemeSwitcher compact />
+      </div>
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold tracking-tight text-stone-950 dark:text-stone-100">Answer Key</h1>

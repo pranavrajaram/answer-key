@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { probsToQValues } from '@/lib/lmsr'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
 
 interface OptionRow {
   label: string
@@ -136,12 +137,15 @@ export default function NewMarketPage() {
   return (
     <div className="ak-page">
       <header className="border-b border-stone-200/70 bg-[var(--ak-bg)] dark:border-stone-700/60">
-        <div className="ak-container flex h-16 items-center gap-3">
-          <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800 dark:hover:text-stone-200">
-            ← Dashboard
-          </Link>
-          <span className="text-stone-300 dark:text-stone-600">/</span>
-          <span className="text-sm font-medium text-stone-700 dark:text-stone-300">New market</span>
+        <div className="ak-container flex h-16 items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/" className="text-sm text-stone-400 transition-colors hover:text-stone-800 dark:hover:text-stone-200">
+              ← Dashboard
+            </Link>
+            <span className="text-stone-300 dark:text-stone-600">/</span>
+            <span className="text-sm font-medium text-stone-700 dark:text-stone-300">New market</span>
+          </div>
+          <ThemeSwitcher compact />
         </div>
       </header>
 

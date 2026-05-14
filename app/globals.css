@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Manual + system theme: `dark:` utilities apply when `.dark` is on a root ancestor (we set it on `html`). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --ak-bg: #f8f4ec;
   --ak-ink: #1f2933;
@@ -18,24 +21,22 @@
   --ak-chart-marker-ring: #fffdf8;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ak-bg: #1c1917;
-    --ak-ink: #e7e5e4;
-    --ak-muted: #a8a29e;
-    --ak-border: rgba(255, 255, 255, 0.09);
-    --ak-border-strong: rgba(255, 255, 255, 0.16);
-    --ak-surface: #292524;
-    --ak-surface-solid: #292524;
-    --ak-accent: #5eead4;
-    --ak-accent-soft: rgba(94, 234, 212, 0.12);
-    --ak-warm: #1c1917;
-    --ak-card-hover-bg: #3f3f46;
-    --ak-shadow: rgba(0, 0, 0, 0.35);
-    --ak-chart-line: #44403c;
-    --ak-chart-text: #a8a29e;
-    --ak-chart-marker-ring: #292524;
-  }
+html.dark {
+  --ak-bg: #1c1917;
+  --ak-ink: #e7e5e4;
+  --ak-muted: #a8a29e;
+  --ak-border: rgba(255, 255, 255, 0.09);
+  --ak-border-strong: rgba(255, 255, 255, 0.16);
+  --ak-surface: #292524;
+  --ak-surface-solid: #292524;
+  --ak-accent: #5eead4;
+  --ak-accent-soft: rgba(94, 234, 212, 0.12);
+  --ak-warm: #1c1917;
+  --ak-card-hover-bg: #3f3f46;
+  --ak-shadow: rgba(0, 0, 0, 0.35);
+  --ak-chart-line: #44403c;
+  --ak-chart-text: #a8a29e;
+  --ak-chart-marker-ring: #292524;
 }
 
 html {
@@ -55,14 +56,38 @@ body {
   color: #134e4a;
 }
 
-@media (prefers-color-scheme: dark) {
-  ::selection {
-    background: rgba(94, 234, 212, 0.22);
-    color: #042f2e;
+html.dark ::selection {
+  background: rgba(94, 234, 212, 0.22);
+  color: #042f2e;
+}
+
+@keyframes ak-theme-icon-pop {
+  0% {
+    transform: scale(0.82) rotate(-8deg);
+    opacity: 0.65;
+  }
+  70% {
+    transform: scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-theme-icon-pop {
+    animation: none;
   }
 }
 
 @layer components {
+  .ak-theme-icon-pop {
+    display: inline-flex;
+    animation: ak-theme-icon-pop 0.38s cubic-bezier(0.34, 1.25, 0.64, 1) both;
+  }
+
   .ak-page {
     @apply min-h-screen;
   }

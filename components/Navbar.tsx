@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/lib/types'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
 
 interface NavbarProps {
   profile: Profile | null
@@ -29,7 +30,8 @@ export default function Navbar({ profile }: NavbarProps) {
         >
           Answer Key
         </Link>
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeSwitcher />
           {profile && (
             <>
               <span className="rounded-full border border-stone-200/80 bg-white/70 px-3 py-1 text-sm text-stone-500 shadow-sm dark:border-stone-600/60 dark:bg-stone-900/70 dark:text-stone-400 dark:shadow-none">
