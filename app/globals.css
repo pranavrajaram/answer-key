@@ -1,6 +1,86 @@
 @import "tailwindcss";
 
+:root {
+  --ak-bg: #f8f4ec;
+  --ak-ink: #1f2933;
+  --ak-muted: #6b7280;
+  --ak-border: rgba(120, 113, 108, 0.2);
+  --ak-border-strong: rgba(94, 83, 71, 0.26);
+  --ak-surface: #fffdf8;
+  --ak-surface-solid: #fffdf8;
+  --ak-accent: #0f766e;
+  --ak-accent-soft: #e4f5f1;
+  --ak-warm: #f5efe3;
+}
+
+html {
+  background: var(--ak-bg);
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--ak-bg);
+  color: var(--ak-ink);
+}
+
+::selection {
+  background: rgba(15, 118, 110, 0.16);
+  color: #134e4a;
+}
+
+@layer components {
+  .ak-page {
+    @apply min-h-screen;
+  }
+
+  .ak-container {
+    @apply mx-auto w-full max-w-4xl px-4 sm:px-5;
+  }
+
+  .ak-card {
+    background: var(--ak-surface);
+    border: 1px solid var(--ak-border);
+    box-shadow: 0 1px 2px rgba(41, 37, 36, 0.05);
+    @apply rounded-2xl;
+  }
+
+  .ak-card-solid {
+    background: var(--ak-surface-solid);
+    border: 1px solid var(--ak-border);
+    @apply rounded-2xl;
+  }
+
+  .ak-card-hover {
+    @apply transition-colors duration-150;
+  }
+
+  .ak-card-hover:hover {
+    border-color: var(--ak-border-strong);
+    background: #ffffff;
+  }
+
+  .ak-section-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400;
+  }
+
+  .ak-field {
+    @apply w-full rounded-xl border border-stone-300/80 bg-white/90 px-3 py-2 text-sm text-stone-900 placeholder-stone-400 transition focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10;
+  }
+
+  .ak-button-primary {
+    @apply rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-700/15 disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .ak-button-secondary {
+    @apply rounded-xl border border-stone-300/80 bg-white/80 px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 hover:text-stone-950 focus:outline-none focus:ring-4 focus:ring-stone-400/15 disabled:opacity-55;
+  }
+
+  .ak-link {
+    @apply text-teal-700 transition-colors hover:text-teal-900 hover:underline underline-offset-4;
+  }
+
+  .ak-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap;
+  }
 }

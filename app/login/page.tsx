@@ -31,25 +31,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div className="ak-page flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">Answer Key</h1>
-          <p className="text-sm text-gray-500 mt-1">Best rot yet.</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-950">Answer Key</h1>
+          <p className="mt-2 text-sm text-stone-500">A quiet prediction market for friends.</p>
         </div>
 
         {sent ? (
-          <div className="bg-teal-50 border border-teal-200 rounded-xl p-6 text-center">
-            <div className="text-2xl mb-2">✉️</div>
+          <div className="rounded-2xl border border-teal-200 bg-teal-50/85 p-6 text-center">
+            <div className="mb-2 text-2xl" aria-hidden="true">✉️</div>
             <p className="font-medium text-teal-900">Check your email</p>
             <p className="text-sm text-teal-700 mt-1">
               We sent a magic link to <strong>{email}</strong>
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="ak-card p-6 space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="mb-1 block text-sm font-semibold text-stone-700">
                 Email address
               </label>
               <input
@@ -59,7 +59,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent placeholder-gray-400"
+                className="ak-field"
               />
             </div>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="ak-button-primary w-full"
             >
               {loading ? 'Sending…' : 'Send magic link'}
             </button>

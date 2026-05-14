@@ -155,18 +155,18 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
   }
 
   return (
-    <section className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 space-y-4">
+    <section className="ak-card p-4 sm:p-5 space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-gray-800">Performance trend</h2>
-          <p className="text-xs text-gray-500 mt-1">{metric.option.description}</p>
+          <h2 className="text-sm font-semibold text-stone-900">Performance trend</h2>
+          <p className="mt-1 text-xs text-stone-500">{metric.option.description}</p>
         </div>
-        <label className="text-xs text-gray-600 flex items-center gap-2">
+        <label className="flex items-center gap-2 text-xs text-stone-600">
           Metric
           <select
             value={metric.option.key}
             onChange={event => setSelectedMetric(event.target.value as StatsMetricKey)}
-            className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500"
+            className="rounded-xl border border-stone-300/80 bg-white/90 px-2.5 py-1.5 text-sm text-stone-700 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/10"
           >
             {metrics.map(item => (
               <option key={item.option.key} value={item.option.key}>
@@ -177,14 +177,14 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
         </label>
       </div>
 
-      <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-2 sm:p-3">
+      <div className="rounded-2xl border border-stone-200/70 bg-stone-50/70 p-2 sm:p-3">
         <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} role="img" aria-label={`${metric.option.label} chart`} className="w-full h-[260px]">
           <line
             x1={PADDING_X}
             x2={CHART_WIDTH - PADDING_X}
             y1={CHART_HEIGHT - PADDING_BOTTOM}
             y2={CHART_HEIGHT - PADDING_BOTTOM}
-            stroke="#d1d5db"
+            stroke="#d6d3d1"
             strokeWidth="1"
           />
           <line
@@ -192,7 +192,7 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             x2={PADDING_X}
             y1={PADDING_TOP}
             y2={CHART_HEIGHT - PADDING_BOTTOM}
-            stroke="#d1d5db"
+            stroke="#d6d3d1"
             strokeWidth="1"
           />
 
@@ -230,17 +230,17 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             })}
 
           {!chartData.hasPlotData && (
-            <text x={CHART_WIDTH / 2} y={CHART_HEIGHT / 2} textAnchor="middle" fill="#6b7280" fontSize="16">
+            <text x={CHART_WIDTH / 2} y={CHART_HEIGHT / 2} textAnchor="middle" fill="#78716c" fontSize="16">
               No plottable points yet for this metric
             </text>
           )}
 
           {pointCount > 0 && (
             <>
-              <text x={PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#6b7280" textAnchor="start">
+              <text x={PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#78716c" textAnchor="start">
                 {formatDateLabel(metric.series[0].points[0].timestamp)}
               </text>
-              <text x={CHART_WIDTH - PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#6b7280" textAnchor="end">
+              <text x={CHART_WIDTH - PADDING_X} y={CHART_HEIGHT - 10} fontSize="11" fill="#78716c" textAnchor="end">
                 {formatDateLabel(metric.series[0].points[pointCount - 1].timestamp)}
               </text>
             </>
@@ -258,11 +258,11 @@ export default function StatsGraph({ metrics, defaultMetric }: StatsGraphProps) 
             .find(item => item.point.value !== null)
 
           return (
-            <div key={series.userId} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600">
+            <div key={series.userId} className="rounded-xl border border-stone-200/80 bg-white/80 px-3 py-2 text-xs text-stone-600">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: series.color }} aria-hidden="true" />
-                <span className="font-medium text-gray-700">{series.username}</span>
-                <span className="text-gray-400">
+                <span className="font-medium text-stone-700">{series.username}</span>
+                <span className="text-stone-400">
                   {latestVisible && latestVisible.point.value !== null
                     ? formatMetricValue(latestVisible.point.value, metric.option.valueFormat)
                     : '—'}

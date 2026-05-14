@@ -11,18 +11,20 @@ export default function MarketCard({ market }: MarketCardProps) {
   const isOpen = !market.resolved_option && new Date(market.closes_at) > new Date()
 
   return (
-    <Link href={`/markets/${market.id}`} className="block">
-      <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all">
-        <div className="flex items-start justify-between gap-2 mb-4">
-          <h3 className="font-medium text-gray-900 leading-snug">{market.question}</h3>
+    <Link href={`/markets/${market.id}`} prefetch className="block">
+      <div className="ak-card ak-card-hover p-4 sm:p-5">
+        <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-3">
+          <h3 className="min-w-0 text-base font-semibold leading-snug text-stone-900">
+            {market.question}
+          </h3>
           {isOpen ? (
             <Countdown closesAt={market.closes_at} />
           ) : market.resolved_option ? (
-            <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+            <span className="ak-badge bg-teal-50 text-teal-700">
               Resolved: {market.resolved_option}
             </span>
           ) : (
-            <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+            <span className="ak-badge bg-stone-100 text-stone-500">
               Closed
             </span>
           )}
