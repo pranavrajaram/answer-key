@@ -24,10 +24,23 @@ const themeInitScript = `
 export const metadata: Metadata = {
   title: 'Answer Key',
   description: 'A prediction market for friends',
+  appleWebApp: {
+    capable: true,
+    title: 'Answer Key',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'dark light',
+  themeColor: '#0f766e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
