@@ -29,10 +29,15 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login')
-  const isAuthCallback = request.nextUrl.pathname.startsWith('/auth/callback')
+  const { pathname } = request.nextUrl
+  const isAuthPage = pathname.startsWith('/login')
+  const isAuthCallback = pathname.startsWith('/auth/callback')
+  // Individual stock pages are publicly viewable (read-only) so link previews
+  // unfurl in chats. Matches /stocks/<id> and /stocks/<id>/... but NOT the
+  // /stocks index, which stays private (no public directory of everyone).
+  const isPublicStock = /^\/stocks\/[^/]+/.test(pathname)
 
-  if (!user && !isAuthPage && !isAuthCallback) {
+  if (!user && !isAuthPage && !isAuthCallback && !isPublicStock) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

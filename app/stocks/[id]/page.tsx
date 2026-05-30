@@ -1,6 +1,8 @@
-import { redirect, notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { StockTrade, StockHolding, StockEvent } from '@/lib/types'
 import { spotPrice } from '@/lib/stockMarket'
 import Navbar from '@/components/Navbar'
@@ -16,19 +18,53 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+// Rich link previews (iMessage, etc.). The accompanying opengraph-image.tsx
+// renders the price card; this supplies the title/description. Uses a cookieless
+// anon client since link crawlers send no auth.
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const supabase = createAnonClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data: stock } = await supabase
+    .from('stocks')
+    .select('ticker, base_price, slope, shares_outstanding, profiles!stocks_profile_id_fkey(username)')
+    .eq('id', id)
+    .single()
+
+  if (!stock) return { title: 'Stock · Answer Key' }
+
+  const username = (stock.profiles as { username?: string } | null)?.username ?? 'unknown'
+  const spot = spotPrice(stock.base_price, stock.slope, stock.shares_outstanding)
+  const title = `$${stock.ticker} · ${spot.toFixed(1)} pts`
+  const description = `Trade shares of ${username} on Answer Key.`
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description },
+  }
+}
+
 export default async function StockPage({ params }: PageProps) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
+  // Stock pages are publicly viewable (read-only) so chat link previews work.
+  // A logged-out viewer sees prices/holders/events but gets a "log in to trade"
+  // prompt instead of the trade panel.
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
   const [{ data: stock }, { data: profile }, { data: trades }, { data: holdings }, { data: events }] =
     await Promise.all([
       supabase.from('stocks').select('*, profiles!stocks_profile_id_fkey(username)').eq('id', id).single(),
-      supabase.from('profiles').select('*').eq('id', user.id).single(),
+      user
+        ? supabase.from('profiles').select('*').eq('id', user.id).single()
+        : Promise.resolve({ data: null }),
       supabase
         .from('stock_trades')
         .select('*, profiles(username)')
@@ -68,13 +104,14 @@ export default async function StockPage({ params }: PageProps) {
       applied_at: e.applied_at,
       proposerName: e.profiles?.username ?? 'someone',
       confirmCount: myRows.filter(c => c.vote === 1).length,
-      myVote: myRows.find(c => c.user_id === user.id)?.vote ?? null,
+      myVote: user ? myRows.find(c => c.user_id === user.id)?.vote ?? null : null,
     }
   })
 
   const spot = spotPrice(stock.base_price, stock.slope, stock.shares_outstanding)
-  const yourShares =
-    (holdings ?? []).find((h: StockHolding) => h.user_id === user.id)?.shares ?? 0
+  const yourShares = user
+    ? (holdings ?? []).find((h: StockHolding) => h.user_id === user.id)?.shares ?? 0
+    : 0
 
   const orderedTrades = [...((trades ?? []) as StockTrade[])].reverse() // oldest → newest
   const chartPoints = orderedTrades.map(t => t.spot_after)
@@ -141,13 +178,13 @@ export default async function StockPage({ params }: PageProps) {
                     >
                       <span
                         className={`font-medium ${
-                          h.user_id === user.id
+                          user && h.user_id === user.id
                             ? 'text-teal-700 dark:text-teal-400'
                             : 'text-stone-600 dark:text-stone-400'
                         }`}
                       >
                         {h.profiles?.username ?? 'unknown'}
-                        {h.user_id === user.id && (
+                        {user && h.user_id === user.id && (
                           <span className="ml-1 text-stone-400 dark:text-stone-500">you</span>
                         )}
                       </span>
@@ -188,9 +225,21 @@ export default async function StockPage({ params }: PageProps) {
           </div>
 
           <div className="space-y-4 xl:col-span-1">
-            {profile && <TradePanel stock={stock} profile={profile} yourShares={yourShares} />}
-
-            <EventProposeForm stockId={stock.id} ticker={stock.ticker} />
+            {profile ? (
+              <>
+                <TradePanel stock={stock} profile={profile} yourShares={yourShares} />
+                <EventProposeForm stockId={stock.id} ticker={stock.ticker} />
+              </>
+            ) : (
+              <div className="ak-card p-5 text-center">
+                <p className="text-sm text-stone-600 dark:text-stone-300">
+                  Trading and life events are for members.
+                </p>
+                <Link href="/login" className="ak-button-primary mt-3 inline-block">
+                  Log in to trade ${stock.ticker}
+                </Link>
+              </div>
+            )}
 
             {yourShares > 0 && (
               <div className="ak-card p-4">
