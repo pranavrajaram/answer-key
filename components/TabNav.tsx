@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const tabs = [
   { label: 'Markets', href: '/' },
+  { label: 'Stocks', href: '/stocks' },
   { label: 'Activity', href: '/activity' },
   { label: 'Stats', href: '/stats' },
 ]
@@ -13,7 +14,7 @@ export default function TabNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-600/35 dark:bg-stone-800/35 sm:inline-grid">
+    <nav className="mb-6 grid w-full max-w-md grid-cols-4 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-600/35 dark:bg-stone-800/35 sm:inline-grid">
       {tabs.map(tab => {
         const active = pathname === tab.href
         return (

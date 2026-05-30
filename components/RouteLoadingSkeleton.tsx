@@ -1,4 +1,4 @@
-type ActiveTab = 'markets' | 'activity' | 'stats'
+type ActiveTab = 'markets' | 'stocks' | 'activity' | 'stats'
 
 interface RouteLoadingSkeletonProps {
   title?: string
@@ -10,6 +10,7 @@ interface RouteLoadingSkeletonProps {
 
 const tabs: { label: string; key: ActiveTab }[] = [
   { label: 'Markets', key: 'markets' },
+  { label: 'Stocks', key: 'stocks' },
   { label: 'Activity', key: 'activity' },
   { label: 'Stats', key: 'stats' },
 ]
@@ -34,7 +35,7 @@ function HeaderSkeleton() {
 
 function TabSkeleton({ activeTab = 'markets' }: { activeTab?: ActiveTab }) {
   return (
-    <nav className="mb-6 grid w-full max-w-sm grid-cols-3 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-600/35 dark:bg-stone-800/35 sm:inline-grid">
+    <nav className="mb-6 grid w-full max-w-md grid-cols-4 rounded-2xl border border-stone-200/80 bg-white/65 p-1 dark:border-stone-600/35 dark:bg-stone-800/35 sm:inline-grid">
       {tabs.map(tab => (
         <div
           key={tab.key}
