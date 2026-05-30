@@ -22,6 +22,8 @@ const themeInitScript = `
 `
 
 export const metadata: Metadata = {
+  // Absolute base for OG/Twitter image URLs so link unfurls (iMessage, etc.) resolve.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://answerkey.pranavrajaram.com'),
   title: 'Answer Key',
   description: 'A prediction market for friends',
   appleWebApp: {
