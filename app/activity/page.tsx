@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { multiplierLabel } from '@/lib/stockEvents'
 import Navbar from '@/components/Navbar'
 import TabNav from '@/components/TabNav'
 
@@ -18,62 +19,85 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+type FeedItem =
+  | { type: 'bet'; id: string; ts: string; username: string; isMe: boolean; amount: number; option: string; marketId: string; question: string }
+  | { type: 'resolve'; id: string; ts: string; username: string; question: string; marketId: string; winner: string }
+  | { type: 'trade'; id: string; ts: string; username: string; isMe: boolean; side: 'buy' | 'sell'; shares: number; cost: number; ticker: string; stockId: string }
+  | { type: 'event'; id: string; ts: string; username: string; isMe: boolean; ticker: string; stockId: string; label: string; multiplier: number; dividend: number; status: string }
+
 export default async function ActivityPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: bets }, { data: resolves }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase
-      .from('bets')
-      .select('id, option, amount, created_at, user_id, market_id, profiles(username), markets(id, question, resolved_option)')
-      .order('created_at', { ascending: false })
-      .limit(100),
-    supabase
-      .from('markets')
-      .select('id, question, resolved_option, creator_id, updated_at:created_at, profiles(username)')
-      .not('resolved_option', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(30),
-  ])
-
-  // Merge bets and resolutions into one timeline, sorted by date
-  type FeedItem =
-    | { type: 'bet'; id: string; ts: string; userId: string; username: string; amount: number; option: string; marketId: string; question: string; isMe: boolean }
-    | { type: 'resolve'; id: string; ts: string; username: string; question: string; marketId: string; winner: string }
+  const [{ data: profile }, { data: bets }, { data: resolves }, { data: trades }, { data: events }] =
+    await Promise.all([
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
+      supabase
+        .from('bets')
+        .select('id, option, amount, created_at, user_id, market_id, profiles(username), markets(id, question)')
+        .order('created_at', { ascending: false })
+        .limit(100),
+      supabase
+        .from('markets')
+        .select('id, question, resolved_option, created_at, profiles(username)')
+        .not('resolved_option', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(30),
+      supabase
+        .from('stock_trades')
+        .select('id, side, shares, cost, stock_id, user_id, created_at, profiles(username), stocks(ticker)')
+        .order('created_at', { ascending: false })
+        .limit(100),
+      supabase
+        .from('stock_events')
+        .select('id, label, multiplier, dividend_per_share, status, stock_id, proposed_by, created_at, stocks(ticker), profiles!stock_events_proposed_by_fkey(username)')
+        .order('created_at', { ascending: false })
+        .limit(100),
+    ])
 
   const feed: FeedItem[] = []
 
   for (const bet of bets ?? []) {
-    const market = (bet.markets as unknown) as { id: string; question: string; resolved_option: string | null } | null
-    const profile_ = (bet.profiles as unknown) as { username: string } | null
+    const market = bet.markets as unknown as { id: string; question: string } | null
+    const prof = bet.profiles as unknown as { username: string } | null
     if (!market) continue
     feed.push({
-      type: 'bet',
-      id: bet.id,
-      ts: bet.created_at,
-      userId: bet.user_id,
-      username: profile_?.username ?? 'unknown',
-      amount: bet.amount,
-      option: bet.option,
-      marketId: market.id,
-      question: market.question,
-      isMe: bet.user_id === user.id,
+      type: 'bet', id: bet.id, ts: bet.created_at,
+      username: prof?.username ?? 'someone', isMe: bet.user_id === user.id,
+      amount: bet.amount, option: bet.option, marketId: market.id, question: market.question,
     })
   }
 
   for (const market of resolves ?? []) {
-    const creator = (market.profiles as unknown) as { username: string } | null
+    const creator = market.profiles as unknown as { username: string } | null
     feed.push({
-      type: 'resolve',
-      id: market.id,
-      ts: market.updated_at,
-      username: creator?.username ?? 'unknown',
-      question: market.question,
-      marketId: market.id,
-      winner: market.resolved_option!,
+      type: 'resolve', id: market.id, ts: market.created_at,
+      username: creator?.username ?? 'someone', question: market.question,
+      marketId: market.id, winner: market.resolved_option!,
+    })
+  }
+
+  for (const t of trades ?? []) {
+    const prof = t.profiles as unknown as { username: string } | null
+    const stock = t.stocks as unknown as { ticker: string } | null
+    feed.push({
+      type: 'trade', id: t.id, ts: t.created_at,
+      username: prof?.username ?? 'someone', isMe: t.user_id === user.id,
+      side: t.side, shares: t.shares, cost: t.cost,
+      ticker: stock?.ticker ?? '???', stockId: t.stock_id,
+    })
+  }
+
+  for (const e of events ?? []) {
+    const prof = e.profiles as unknown as { username: string } | null
+    const stock = e.stocks as unknown as { ticker: string } | null
+    feed.push({
+      type: 'event', id: e.id, ts: e.created_at,
+      username: prof?.username ?? 'someone', isMe: e.proposed_by === user.id,
+      ticker: stock?.ticker ?? '???', stockId: e.stock_id,
+      label: e.label, multiplier: e.multiplier, dividend: e.dividend_per_share, status: e.status,
     })
   }
 
@@ -100,55 +124,90 @@ export default async function ActivityPage() {
             </div>
           ) : (
             <div className="ak-card p-2 sm:p-3">
-              {feed.map(item => (
-                <div
-                  key={item.type + item.id}
-                  className="flex gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/70 dark:hover:bg-stone-800/40"
-                >
-                  {/* Dot */}
-                  <div className="mt-1.5 shrink-0">
-                    {item.type === 'bet' ? (
-                      <div className={`h-2 w-2 rounded-full ${item.isMe ? 'bg-teal-600' : 'bg-stone-300 dark:bg-stone-600'}`} />
-                    ) : (
-                      <div className="h-2 w-2 rounded-full bg-amber-400" />
-                    )}
-                  </div>
+              {feed.map(item => {
+                const isMe = 'isMe' in item && item.isMe
+                const who = isMe ? 'You' : item.username
+                const dot =
+                  item.type === 'resolve'
+                    ? 'bg-amber-400'
+                    : item.type === 'trade'
+                      ? item.side === 'buy' ? 'bg-teal-600' : 'bg-red-500'
+                      : item.type === 'event'
+                        ? item.multiplier > 1 ? 'bg-teal-600' : item.multiplier < 1 ? 'bg-red-500' : 'bg-violet-500'
+                        : isMe ? 'bg-teal-600' : 'bg-stone-300 dark:bg-stone-600'
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {item.type === 'bet' ? (
+                return (
+                  <div
+                    key={item.type + item.id}
+                    className="flex gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/70 dark:hover:bg-stone-800/40"
+                  >
+                    <div className="mt-1.5 shrink-0">
+                      <div className={`h-2 w-2 rounded-full ${dot}`} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
-                        <span
-                          className={`font-semibold ${item.isMe ? 'text-teal-700 dark:text-teal-400' : 'text-stone-950 dark:text-stone-100'}`}
-                        >
-                          {item.isMe ? 'You' : item.username}
+                        <span className={`font-semibold ${isMe ? 'text-teal-700 dark:text-teal-400' : 'text-stone-950 dark:text-stone-100'}`}>
+                          {who}
                         </span>
-                        {' bet '}
-                        <span className="font-medium text-stone-950 dark:text-stone-100">{item.amount} pts</span>
-                        {' on '}
-                        <span className="font-medium text-stone-950 dark:text-stone-100">{item.option}</span>
-                        {' in '}
-                        <Link href={`/markets/${item.marketId}`} className="ak-link">
-                          {item.question}
-                        </Link>
-                      </p>
-                    ) : (
-                      <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
-                        <span className="font-semibold text-stone-950 dark:text-stone-100">{item.username}</span>
-                        {' resolved '}
-                        <Link href={`/markets/${item.marketId}`} className="ak-link">
-                          {item.question}
-                        </Link>
-                        {' — winner: '}
-                        <span className="font-medium text-amber-700 dark:text-amber-400">{item.winner}</span>
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Time */}
-                  <span className="mt-0.5 shrink-0 text-xs text-stone-400 dark:text-stone-500">{timeAgo(item.ts)}</span>
-                </div>
-              ))}
+                        {item.type === 'bet' && (
+                          <>
+                            {' bet '}
+                            <span className="font-medium text-stone-950 dark:text-stone-100">{item.amount} pts</span>
+                            {' on '}
+                            <span className="font-medium text-stone-950 dark:text-stone-100">{item.option}</span>
+                            {' in '}
+                            <Link href={`/markets/${item.marketId}`} className="ak-link">{item.question}</Link>
+                          </>
+                        )}
+
+                        {item.type === 'resolve' && (
+                          <>
+                            {' resolved '}
+                            <Link href={`/markets/${item.marketId}`} className="ak-link">{item.question}</Link>
+                            {' — winner: '}
+                            <span className="font-medium text-amber-700 dark:text-amber-400">{item.winner}</span>
+                          </>
+                        )}
+
+                        {item.type === 'trade' && (
+                          <>
+                            {item.side === 'buy' ? ' bought ' : ' sold '}
+                            <span className="font-medium text-stone-950 dark:text-stone-100">
+                              {item.shares} {item.shares === 1 ? 'share' : 'shares'}
+                            </span>
+                            {' of '}
+                            <Link href={`/stocks/${item.stockId}`} className="ak-link font-mono">${item.ticker}</Link>
+                            {' for '}
+                            <span className="font-medium text-stone-950 dark:text-stone-100">{item.cost} pts</span>
+                          </>
+                        )}
+
+                        {item.type === 'event' && (
+                          <>
+                            {' flagged '}
+                            <Link href={`/stocks/${item.stockId}`} className="ak-link font-mono">${item.ticker}</Link>
+                            {': '}
+                            <span className="font-medium text-stone-950 dark:text-stone-100">{item.label}</span>
+                            {' '}
+                            <span className={item.multiplier > 1 ? 'text-teal-600 dark:text-teal-400' : item.multiplier < 1 ? 'text-red-500 dark:text-red-400' : 'text-stone-500'}>
+                              ({multiplierLabel(item.multiplier)}{item.dividend > 0 ? ` · ${item.dividend} pts/share` : ''})
+                            </span>
+                            {item.status !== 'applied' && (
+                              <span className="text-stone-400 dark:text-stone-500">
+                                {item.status === 'rejected' ? ' · rejected' : ' · awaiting confirmation'}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </p>
+                    </div>
+
+                    <span className="mt-0.5 shrink-0 text-xs text-stone-400 dark:text-stone-500">{timeAgo(item.ts)}</span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

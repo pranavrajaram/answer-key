@@ -7,6 +7,8 @@ interface LeaderboardEntry {
   id: string
   username: string
   points_balance: number
+  stockValue: number
+  netWorth: number
 }
 
 interface MarketPosition {
@@ -64,9 +66,16 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-stone-700 tabular-nums dark:text-stone-200">
-                  {p.points_balance.toLocaleString()}
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className="text-sm font-semibold text-stone-700 tabular-nums dark:text-stone-200">
+                    {p.netWorth.toLocaleString()}
+                  </span>
+                  {p.stockValue > 0 && (
+                    <span className="text-[11px] tabular-nums text-stone-400 dark:text-stone-500">
+                      incl. {p.stockValue.toLocaleString()} in stocks
+                    </span>
+                  )}
+                </div>
                 {positions.length > 0 && (
                   <span className="text-xs text-stone-400 dark:text-stone-500">
                     {isOpen ? '▴' : '▾'}
