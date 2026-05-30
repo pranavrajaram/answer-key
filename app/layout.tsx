@@ -21,9 +21,18 @@ const themeInitScript = `
 })();
 `
 
+// Absolute base for OG/Twitter image URLs so link unfurls (iMessage, etc.)
+// fetch the card image from the domain actually serving the page. Priority:
+// explicit override → Vercel production domain → this deployment's URL → local.
+function resolveSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return 'http://localhost:3000'
+}
+
 export const metadata: Metadata = {
-  // Absolute base for OG/Twitter image URLs so link unfurls (iMessage, etc.) resolve.
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://answerkey.pranavrajaram.com'),
+  metadataBase: new URL(resolveSiteUrl()),
   title: 'Answer Key',
   description: 'A prediction market for friends',
   appleWebApp: {
