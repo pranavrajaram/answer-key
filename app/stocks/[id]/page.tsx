@@ -8,6 +8,7 @@ import TradePanel from '@/components/TradePanel'
 import StockChart from '@/components/StockChart'
 import EventFeed, { FeedEvent } from '@/components/EventFeed'
 import EventProposeForm from '@/components/EventProposeForm'
+import StockRealtime from '@/components/StockRealtime'
 
 export const revalidate = 0
 
@@ -89,6 +90,7 @@ export default async function StockPage({ params }: PageProps) {
   return (
     <div className="ak-page">
       <Navbar profile={profile} />
+      <StockRealtime stockId={stock.id} />
 
       <main className="ak-container py-6 sm:py-8">
         <div className="mb-5 flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500">

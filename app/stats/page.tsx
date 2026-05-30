@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { spotPrice } from '@/lib/stockMarket'
 import Navbar from '@/components/Navbar'
 import TabNav from '@/components/TabNav'
 import StatsGraph, {
@@ -15,6 +16,8 @@ interface UserStats {
   id: string
   username: string
   balance: number
+  stockValue: number
+  netWorth: number
   totalWagered: number
   totalEarned: number
   netPL: number
@@ -30,14 +33,42 @@ export default async function StatsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: profiles }, { data: bets }, { data: resolvedMarkets }, { data: transactions }] =
-    await Promise.all([
-      supabase.from('profiles').select('*').eq('id', user.id).single(),
-      supabase.from('profiles').select('id, username, points_balance').order('points_balance', { ascending: false }),
-      supabase.from('bets').select('user_id, market_id, option, amount, created_at'),
-      supabase.from('markets').select('id, resolved_option').not('resolved_option', 'is', null),
-      supabase.from('transactions').select('user_id, amount, reason, created_at'),
-    ])
+  const [
+    { data: profile },
+    { data: profiles },
+    { data: bets },
+    { data: resolvedMarkets },
+    { data: transactions },
+    { data: stocks },
+    { data: holdings },
+    { data: stockTrades },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('profiles').select('id, username, points_balance').order('points_balance', { ascending: false }),
+    supabase.from('bets').select('user_id, market_id, option, amount, created_at'),
+    supabase.from('markets').select('id, resolved_option').not('resolved_option', 'is', null),
+    supabase.from('transactions').select('user_id, amount, reason, created_at'),
+    supabase.from('stocks').select('id, base_price, slope, shares_outstanding'),
+    supabase.from('stock_holdings').select('user_id, stock_id, shares'),
+    supabase
+      .from('stock_trades')
+      .select('user_id, stock_id, side, shares, spot_after, created_at')
+      .order('created_at', { ascending: true }),
+  ])
+
+  // Current mark-to-market stock value per user (for net worth + a stats column).
+  const spotByStock = new Map<string, number>()
+  for (const s of stocks ?? []) {
+    spotByStock.set(s.id, spotPrice(s.base_price, s.slope, s.shares_outstanding))
+  }
+  const stockValueByUser = new Map<string, number>()
+  for (const h of holdings ?? []) {
+    if (h.shares <= 0) continue
+    stockValueByUser.set(
+      h.user_id,
+      (stockValueByUser.get(h.user_id) ?? 0) + h.shares * (spotByStock.get(h.stock_id) ?? 0)
+    )
+  }
 
   // Index resolved markets
   const resolvedMap = new Map((resolvedMarkets ?? []).map(m => [m.id, m.resolved_option as string]))
@@ -46,10 +77,13 @@ export default async function StatsPage() {
   const statsMap = new Map<string, UserStats>()
 
   for (const p of profiles ?? []) {
+    const stockValue = Math.round(stockValueByUser.get(p.id) ?? 0)
     statsMap.set(p.id, {
       id: p.id,
       username: p.username,
       balance: p.points_balance,
+      stockValue,
+      netWorth: p.points_balance + stockValue,
       totalWagered: 0,
       totalEarned: 0,
       netPL: 0,
@@ -104,7 +138,7 @@ export default async function StatsPage() {
     s.netPL = s.totalEarned - wageredOnResolved
   }
 
-  const stats = [...statsMap.values()].sort((a, b) => b.balance - a.balance)
+  const stats = [...statsMap.values()].sort((a, b) => b.netWorth - a.netWorth)
   const palette = ['#0f766e', '#14b8a6', '#0891b2', '#7c3aed', '#f97316', '#dc2626', '#4f46e5']
 
   const betsByUserSorted = new Map<string, { amount: number; marketId: string; option: string; createdAt: string }[]>()
@@ -135,10 +169,41 @@ export default async function StatsPage() {
     userTxns.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
   }
 
+  // Per-user stock trades (chronological) for reconstructing share holdings over
+  // time. spot_after captures the price right after each trade, so we use it as
+  // the best-known mark for that stock up until the next trade.
+  interface TradePoint { stockId: string; side: 'buy' | 'sell'; shares: number; spotAfter: number; createdAt: string }
+  const tradesByUser = new Map<string, TradePoint[]>()
+  const lastSpotByStock = new Map<string, { ts: number; spot: number }[]>()
+  for (const t of stockTrades ?? []) {
+    if (!tradesByUser.has(t.user_id)) tradesByUser.set(t.user_id, [])
+    tradesByUser.get(t.user_id)!.push({
+      stockId: t.stock_id, side: t.side, shares: t.shares, spotAfter: t.spot_after, createdAt: t.created_at,
+    })
+    if (!lastSpotByStock.has(t.stock_id)) lastSpotByStock.set(t.stock_id, [])
+    lastSpotByStock.get(t.stock_id)!.push({ ts: new Date(t.created_at).getTime(), spot: t.spot_after })
+  }
+
+  // Spot price of a stock at a given time = price after the most recent trade
+  // at or before that time, else the stock's current spot (covers no-trade gaps).
+  function spotAt(stockId: string, ts: number): number {
+    const hist = lastSpotByStock.get(stockId)
+    if (hist && hist.length) {
+      let best = hist[0].spot
+      for (const h of hist) {
+        if (h.ts <= ts) best = h.spot
+        else break
+      }
+      return best
+    }
+    return spotByStock.get(stockId) ?? 0
+  }
+
   const timeline = Array.from(
     new Set([
       ...(bets ?? []).map(bet => bet.created_at),
       ...(transactions ?? []).map(txn => txn.created_at),
+      ...(stockTrades ?? []).map(t => t.created_at),
     ])
   ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
 
@@ -148,7 +213,13 @@ export default async function StatsPage() {
     {
       key: 'balance',
       label: 'Points balance',
-      description: 'Balance over time for every player (default).',
+      description: 'Liquid points balance over time for every player.',
+      valueFormat: 'number',
+    },
+    {
+      key: 'netWorth',
+      label: 'Net worth',
+      description: 'Liquid points plus the market value of stock holdings over time.',
       valueFormat: 'number',
     },
     {
@@ -190,16 +261,19 @@ export default async function StatsPage() {
     return stats.map((stat, index) => {
       const userBets = betsByUserSorted.get(stat.id) ?? []
       const userTxns = txnsByUserSorted.get(stat.id) ?? []
+      const userTrades = tradesByUser.get(stat.id) ?? []
       const txnSum = userTxns.reduce((sum, txn) => sum + txn.amount, 0)
       const startingBalance = stat.balance - txnSum
 
       let betPointer = 0
       let txnPointer = 0
+      let tradePointer = 0
       let runningBalance = startingBalance
       let runningWagered = 0
       let runningBets = 0
       const enteredMarkets = new Set<string>()
       const wonMarkets = new Set<string>()
+      const heldShares = new Map<string, number>() // stockId → shares held
 
       const points = graphTimestamps.map(timestamp => {
         const ts = new Date(timestamp).getTime()
@@ -222,8 +296,22 @@ export default async function StatsPage() {
           betPointer += 1
         }
 
+        while (tradePointer < userTrades.length && new Date(userTrades[tradePointer].createdAt).getTime() <= ts) {
+          const tr = userTrades[tradePointer]
+          const delta = tr.side === 'buy' ? tr.shares : -tr.shares
+          heldShares.set(tr.stockId, (heldShares.get(tr.stockId) ?? 0) + delta)
+          tradePointer += 1
+        }
+
         let rawValue: number | null = null
         if (metricKey === 'balance') rawValue = runningBalance
+        if (metricKey === 'netWorth') {
+          let stockVal = 0
+          for (const [stockId, shares] of heldShares) {
+            if (shares > 0) stockVal += shares * spotAt(stockId, ts)
+          }
+          rawValue = runningBalance + stockVal
+        }
         if (metricKey === 'totalWagered') rawValue = runningWagered
         if (metricKey === 'totalBets') rawValue = runningBets
         if (metricKey === 'marketsWon') rawValue = wonMarkets.size
@@ -289,11 +377,13 @@ export default async function StatsPage() {
                 <th className="ak-section-label px-4 py-3 text-left">#</th>
                 <th className="ak-section-label px-4 py-3 text-left">Player</th>
                 <th className="ak-section-label px-4 py-3 text-right">Balance</th>
-                <th className="ak-section-label hidden px-4 py-3 text-right sm:table-cell">Wagered</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right sm:table-cell">Stocks</th>
+                <th className="ak-section-label px-4 py-3 text-right">Net worth</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right lg:table-cell">Wagered</th>
                 <th className="ak-section-label hidden px-4 py-3 text-right sm:table-cell">Win rate</th>
                 <th className="ak-section-label hidden px-4 py-3 text-right md:table-cell">Markets</th>
                 <th className="ak-section-label hidden px-4 py-3 text-right md:table-cell">Best win</th>
-                <th className="ak-section-label px-4 py-3 text-right">Net P&L</th>
+                <th className="ak-section-label hidden px-4 py-3 text-right lg:table-cell">Net P&L</th>
               </tr>
             </thead>
             <tbody>
@@ -319,6 +409,12 @@ export default async function StatsPage() {
                       {s.balance.toLocaleString()}
                     </td>
                     <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell dark:text-stone-400">
+                      {s.stockValue > 0 ? s.stockValue.toLocaleString() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-stone-800 dark:text-stone-100">
+                      {s.netWorth.toLocaleString()}
+                    </td>
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-stone-500 lg:table-cell dark:text-stone-400">
                       {s.totalWagered > 0 ? s.totalWagered.toLocaleString() : '—'}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums hidden sm:table-cell">
@@ -351,7 +447,7 @@ export default async function StatsPage() {
                         '—'
                       )}
                     </td>
-                    <td className={`px-4 py-3 text-right font-semibold tabular-nums ${plColor(s.netPL)}`}>
+                    <td className={`hidden px-4 py-3 text-right font-semibold tabular-nums lg:table-cell ${plColor(s.netPL)}`}>
                       {plFormat(s.netPL)}
                     </td>
                   </tr>
@@ -362,7 +458,7 @@ export default async function StatsPage() {
         </div>
 
         <p className="mt-3 text-xs text-stone-400 dark:text-stone-500">
-          Win rate and P&L are calculated from resolved markets only.
+          Net worth = points balance + current stock holdings. Win rate and P&L are calculated from resolved markets only.
         </p>
       </main>
     </div>
