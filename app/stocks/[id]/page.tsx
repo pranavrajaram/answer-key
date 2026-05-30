@@ -11,6 +11,7 @@ import StockChart from '@/components/StockChart'
 import EventFeed, { FeedEvent } from '@/components/EventFeed'
 import EventProposeForm from '@/components/EventProposeForm'
 import StockRealtime from '@/components/StockRealtime'
+import ShareStockButton from '@/components/ShareStockButton'
 
 export const revalidate = 0
 
@@ -147,6 +148,9 @@ export default async function StockPage({ params }: PageProps) {
                     ${stock.ticker}
                   </h1>
                   <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{username}</p>
+                  <div className="mt-2">
+                    <ShareStockButton ticker={stock.ticker} username={username} price={spot} />
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-semibold tabular-nums text-stone-950 dark:text-stone-100">
