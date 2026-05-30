@@ -49,29 +49,29 @@ export default function LeaderboardWithPortfolio({ leaderboard, portfolios, curr
             {/* Leaderboard row */}
             <button
               onClick={() => positions.length > 0 && toggle(p.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+              className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${
                 isMe
                   ? 'hover:bg-teal-100/60 dark:hover:bg-teal-900/25'
                   : 'hover:bg-white dark:hover:bg-stone-800/40'
               } ${positions.length === 0 ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              <div className="flex items-center gap-3">
-                <span className="w-4 text-xs tabular-nums text-stone-400 dark:text-stone-500">{i + 1}</span>
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <span className="w-4 shrink-0 text-xs tabular-nums text-stone-400 dark:text-stone-500">{i + 1}</span>
                 <span
-                  className={`text-sm ${
+                  className={`truncate text-sm ${
                     isMe ? 'font-semibold text-teal-800 dark:text-teal-300' : 'font-medium text-stone-800 dark:text-stone-200'
                   }`}
                 >
                   {p.username}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-semibold text-stone-700 tabular-nums dark:text-stone-200">
                     {p.netWorth.toLocaleString()}
                   </span>
                   {p.stockValue > 0 && (
-                    <span className="text-[11px] tabular-nums text-stone-400 dark:text-stone-500">
+                    <span className="whitespace-nowrap text-[11px] tabular-nums text-stone-400 dark:text-stone-500">
                       incl. {p.stockValue.toLocaleString()} in stocks
                     </span>
                   )}
