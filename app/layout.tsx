@@ -22,18 +22,20 @@ const themeInitScript = `
 `
 
 // Absolute base for OG/Twitter image URLs so link unfurls (iMessage, etc.)
-// fetch the card image from the domain actually serving the page. The live
-// site is traphouseanswerkey.vercel.app; that's the production fallback so
-// previews resolve even without env config. Priority: explicit override →
-// Vercel's own deploy domain → known production domain → local dev.
+// fetch the card image from the domain actually serving the page.
+//
+// The live site is traphouseanswerkey.vercel.app. We intentionally prefer
+// Vercel's own injected deploy domain over NEXT_PUBLIC_APP_URL, because a
+// stale NEXT_PUBLIC_APP_URL (pointing at a non-resolving domain) was breaking
+// previews. The manual override is only used as a last resort before localhost.
 const PRODUCTION_URL = 'https://traphouseanswerkey.vercel.app'
 
 function resolveSiteUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   if (process.env.VERCEL_ENV === 'production') return PRODUCTION_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
   if (process.env.NODE_ENV === 'production') return PRODUCTION_URL
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
   return 'http://localhost:3000'
 }
 
