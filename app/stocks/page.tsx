@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import TabNav from '@/components/TabNav'
 import StockCard from '@/components/StockCard'
 import StockTrendChart, { TrendSeries } from '@/components/StockTrendChart'
+import StockRealtime from '@/components/StockRealtime'
 import RoutePrefetcher from '@/components/RoutePrefetcher'
 
 export const revalidate = 0
@@ -102,6 +103,7 @@ export default async function StocksPage() {
   return (
     <div className="ak-page">
       <Navbar profile={profile} />
+      <StockRealtime />
       <RoutePrefetcher hrefs={sorted.slice(0, 12).map(r => `/stocks/${r.id}`)} />
 
       <main className="ak-container space-y-6 py-6 sm:py-8">

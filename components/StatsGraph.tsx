@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 
 export type StatsMetricKey =
   | 'balance'
+  | 'netWorth'
   | 'totalWagered'
   | 'totalBets'
   | 'marketsWon'
