@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Market } from '@/lib/types'
+import { spotPrice } from '@/lib/stockMarket'
 import Navbar from '@/components/Navbar'
 import MarketCard from '@/components/MarketCard'
 import LeaderboardWithPortfolio from '@/components/LeaderboardWithPortfolio'
@@ -25,17 +26,51 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: markets }, { data: allBets }, { data: leaderboard }] =
-    await Promise.all([
-      supabase.from('profiles').select('*').eq('id', user.id).single(),
-      supabase.from('markets').select('*, profiles(username)').order('created_at', { ascending: false }),
-      supabase.from('bets').select('user_id, market_id, option, amount'),
-      supabase
-        .from('profiles')
-        .select('id, username, points_balance')
-        .order('points_balance', { ascending: false })
-        .limit(10),
-    ])
+  const [
+    { data: profile },
+    { data: markets },
+    { data: allBets },
+    { data: allProfiles },
+    { data: allStocks },
+    { data: allHoldings },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('markets').select('*, profiles(username)').order('created_at', { ascending: false }),
+    supabase.from('bets').select('user_id, market_id, option, amount'),
+    supabase.from('profiles').select('id, username, points_balance'),
+    supabase.from('stocks').select('id, base_price, slope, shares_outstanding'),
+    supabase.from('stock_holdings').select('user_id, stock_id, shares'),
+  ])
+
+  // Leaderboard score = liquid points + market value of stock holdings.
+  const spotByStock: Record<string, number> = {}
+  for (const s of (allStocks ?? []) as {
+    id: string
+    base_price: number
+    slope: number
+    shares_outstanding: number
+  }[]) {
+    spotByStock[s.id] = spotPrice(s.base_price, s.slope, s.shares_outstanding)
+  }
+  const stockValueByUser: Record<string, number> = {}
+  for (const h of (allHoldings ?? []) as { user_id: string; stock_id: string; shares: number }[]) {
+    if (h.shares <= 0) continue
+    stockValueByUser[h.user_id] =
+      (stockValueByUser[h.user_id] ?? 0) + h.shares * (spotByStock[h.stock_id] ?? 0)
+  }
+  const leaderboard = ((allProfiles ?? []) as { id: string; username: string; points_balance: number }[])
+    .map(p => {
+      const stockValue = Math.round(stockValueByUser[p.id] ?? 0)
+      return {
+        id: p.id,
+        username: p.username,
+        points_balance: p.points_balance,
+        stockValue,
+        netWorth: p.points_balance + stockValue,
+      }
+    })
+    .sort((a, b) => b.netWorth - a.netWorth)
+    .slice(0, 10)
 
   const openMarkets = (markets ?? []).filter(
     (m: Market) => !m.resolved_option && new Date(m.closes_at) > new Date()
