@@ -165,7 +165,6 @@ security definer
 as $$
 declare
   v_caller_id  uuid := auth.uid();
-  v_creator_id uuid;
   v_resolved   text;
   v_question   text;
   v_total_pot  integer;
@@ -173,19 +172,19 @@ declare
   v_bet        record;
   v_payout     integer;
 begin
-  -- Validate caller is creator and market not yet resolved
-  select creator_id, resolved_option, question
-    into v_creator_id, v_resolved, v_question
+  -- Any authenticated user may resolve an unresolved market.
+  if v_caller_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select resolved_option, question
+    into v_resolved, v_question
     from public.markets
    where id = p_market_id
      for update;
 
   if not found then
     raise exception 'Market not found';
-  end if;
-
-  if v_creator_id <> v_caller_id then
-    raise exception 'Only the creator can resolve this market';
   end if;
 
   if v_resolved is not null then
@@ -237,5 +236,7 @@ end;
 $$;
 
 -- Grant execute to authenticated users
+revoke execute on function public.resolve_market(uuid, text) from public;
+revoke execute on function public.resolve_market(uuid, text) from anon;
 grant execute on function public.place_bet(uuid, text, integer, float8[]) to authenticated;
 grant execute on function public.resolve_market(uuid, text) to authenticated;

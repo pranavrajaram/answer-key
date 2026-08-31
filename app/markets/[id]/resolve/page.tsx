@@ -27,7 +27,6 @@ export default async function ResolvePage({ params }: PageProps) {
   ])
 
   if (!market) notFound()
-  if (market.creator_id !== user.id) redirect(`/markets/${id}`)
   if (market.resolved_option) redirect(`/markets/${id}`)
 
   const totalPot = (bets ?? []).reduce((s: number, b: { amount: number }) => s + b.amount, 0)

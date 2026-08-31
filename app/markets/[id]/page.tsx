@@ -205,7 +205,7 @@ export default async function MarketPage({ params }: PageProps) {
               <SellPanel market={market} positions={positions} />
             )}
 
-            {isCreator && !isResolved && (
+            {!isResolved && (
               <Link
                 href={`/markets/${market.id}/resolve`}
                 className="ak-button-secondary block py-3 text-center"

@@ -42,7 +42,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Magic link auth**: Enter your email, click the link, you're in. On first login your profile is created automatically with 1000 pts.
 - **Create a market**: Pick a question, define up to 6 options, set a closing time.
 - **Bet**: Use the slider to pick an amount (10–500 pts). Live LMSR odds update as you move the slider — no network call needed.
-- **Resolve**: Only the market creator can resolve. Click an option, confirm, and payouts are distributed automatically.
+- **Resolve**: Any signed-in user can resolve an unresolved market. Click an option, confirm, and payouts are distributed automatically.
 
 ## LMSR pricing
 
